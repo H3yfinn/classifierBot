@@ -117,6 +117,7 @@ function processMessage(event) {
 }
 
 function findMovie(userId, movieTitle) {
+    var OMDBLINK = "http://www.omdbapi.com/?type=movie&t=" + movieTitle;
     request("http://www.omdbapi.com/?type=movie&t=" + movieTitle, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var movieObj = JSON.parse(body);
@@ -168,7 +169,7 @@ function findMovie(userId, movieTitle) {
                 sendMessage(userId, {text: movieObj.Error});
             }
         } else {
-            sendMessage(userId, {text: "Something went wrong. Try again."});
+            sendMessage(userId, {text: "Something went wrong. Try again. " + OMDBLINK + error});
         }
     });
 }
