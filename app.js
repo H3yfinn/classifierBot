@@ -96,10 +96,10 @@ function processMessage(event) {
 
             switch (formattedMsg) {
               case 'lend':
-                recordLendAmount(senderId)
+                recordLendAmount(senderId);
 
               case 'borrow':
-                recordBorrowAmount(senderId)
+                recordBorrowAmount(senderId);
 
             }
         } else if (message.attachments) {
