@@ -97,9 +97,10 @@ function processMessage(event) {
             switch (formattedMsg) {
               case 'lend':
                 recordLendAmount(senderId);
-
+                break;
               case 'borrow':
                 recordBorrowAmount(senderId);
+                break;
 
             }
         } else if (message.attachments) {
