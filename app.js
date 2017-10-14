@@ -7,8 +7,6 @@ var mongoose = require("mongoose");
 //var Movie = require("./models/movie");
 
 var app = express();
-var
-
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.listen((process.env.PORT || 5000));
@@ -44,7 +42,7 @@ app.post("/webhook", function (req, res) {
                 } else if (event.message) {
                     processMessage(event);
                 }
-            });//functionality here to indicated whtehr its a lend or borow
+            });//functionality here to indicayted whtehr its a lend or borow
         });
 
         res.sendStatus(200);
@@ -113,7 +111,7 @@ function processMessage(event) {
 
 
 function recordLendAmount(senderId) {
-    sendMessage(senderId, {text: 'Cool, how much did you lend?', quick_reply: { content_type: 'location'}});
+    sendMessage(senderId, {text: 'Cool, how much did you lend?'});
 }
 
 function recordBorrowAmount(senderId) {
@@ -129,7 +127,6 @@ function sendMessage(recipientId, message) {
         json: {
             recipient: {id: recipientId},
             message: message,
-
         }
     }, function(error, response, body) {
         if (error) {
