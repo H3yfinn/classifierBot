@@ -72,21 +72,23 @@ function processPostback(event) {
                 name = bodyObj.first_name;
                 greeting = "Hi " + name + ". ";
             }
-            var message = greeting + "My name is SP Movie Bot. I can tell you various details regarding movies. What movie would you like to know about?";
-            sendMessage(senderId, {text: message,
-
+            var message = greeting + "My name is Finnbot, I'm here to track how much you lend to and owe people, kind of like a personal accountant but free! - and way way smarter (;";
+            sendMessage(senderId, {text: message});
+            sendMessage(sendId, {text: 'Are you going to record how much you have borrowed from or lent someone?',
               quick_replies:[
                 {
                   content_type:'text',
-                  title: 'Red',
-                  payload: 'gg'
-                }]
+                  title: 'Lend',
+                  payload: 'LEND'//not needed atm
+                },
+                {
+                  content_type: 'text',
+                  title: 'Borrow',
+                  payload: 'BORROW'
+                }
+              ]
             });
-        });
-    } else if (payload === "Correct") {
-        sendMessage(senderId, {text: "Awesome! What would you like to find out? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating' for the various details."});
-    } else if (payload === "Incorrect") {
-        sendMessage(senderId, {text: "Oops! Sorry about that. Try using the exact title of the movie"});
+          });
     }
 }
 
@@ -101,14 +103,21 @@ function processMessage(event) {
         // You may get a text or attachment but not both
         if (message.text) {
             var formattedMsg = message.text.toLowerCase().trim();
-
             switch (formattedMsg) {
               case 'lend':
-                recordLendAmount(senderId);
+                requestLendAmount(senderId);
                 break;
               case 'borrow':
-                recordBorrowAmount(senderId);
+                requestBorrowAmount(senderId);
                 break;
+              case 'undo':
+                deleteLatestObject(senderId);
+              case 'isnumber':
+                recordLendAmount(senderId, formattedMsg);
+                recordBorrowAmount(senderId, formattedMsg);
+              default:
+                recordName(senderId, formattedMsg);
+
 
             }
         } else if (message.attachments) {
@@ -125,15 +134,27 @@ function processMessage(event) {
     }
 }
 
-
-function recordLendAmount(senderId) {
-    sendMessage(senderId, {text: 'Cool, how much did you lend?'});
+function deleteLatestObject(senderId){
+    sendMessage(senderId, {text:"We've reset your latest entry"})//will this remove entries in database as well? Important that transparency is ahceived
 }
+function requestLendAmount(senderId) {
+    sendMessage(senderId, {text: 'Cool, how much did you lend?'});//possobility to add the most used people as quick replies
+}//the rply to this should come with a payload indicating its a name and then the same for money
 
-function recordBorrowAmount(senderId) {
+function requestBorrowAmount(senderId) {
     sendMessage(senderId, {text: 'Cool, how much did you borrow?'});
 }
 
+function recordLendAmount(senderId, formattedMsg) {
+    sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});//possobility to add the most used people as quick replies
+}//the rply to this should come with a payload indicating its a name and then the same for money
+
+function recordBorrowAmount(senderId) {
+    sendMessage(senderId, {text: '"Awesome! Who did you lend this to?"'});
+}
+function recordName(senderId, formattedMsg){
+    sendMessage(senderId, {text: "Thanks for that. Everything is recorded. Use the buttons below to choose your next action"});
+}
 // sends message to user
 function sendMessage(recipientId, message) {
     request({
