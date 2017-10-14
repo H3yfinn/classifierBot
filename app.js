@@ -73,7 +73,14 @@ function processPostback(event) {
                 greeting = "Hi " + name + ". ";
             }
             var message = greeting + "My name is SP Movie Bot. I can tell you various details regarding movies. What movie would you like to know about?";
-            sendMessage(senderId, {text: message});
+            sendMessage(senderId, {text: message,
+              quick_replies:[
+                {
+                  content_type:'text',
+                  title: 'Red',
+                  payload: 'gg'
+                }]
+            });
         });
     } else if (payload === "Correct") {
         sendMessage(senderId, {text: "Awesome! What would you like to find out? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating' for the various details."});
@@ -104,11 +111,24 @@ function processMessage(event) {
 
             }
         } else if (message.attachments) {
-            sendMessage(senderId, {text: "Sorry, I don't understand your request."});
+            sendMessage(senderId, {
+              text: "Sorry, I don't understand your request.",
+              quick_replies:[
+                {
+                  content_type:'text',
+                  title: 'Red',
+                  payload: 'gg'
+                }]
+              });
         }
     }
 }
-
+"quick_replies":[
+{
+  "content_type":"text",
+    "title":"Red",
+    "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+}]
 
 function recordLendAmount(senderId) {
     sendMessage(senderId, {text: 'Cool, how much did you lend?'});
