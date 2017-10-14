@@ -74,6 +74,7 @@ function processPostback(event) {
             }
             var message = greeting + "My name is SP Movie Bot. I can tell you various details regarding movies. What movie would you like to know about?";
             sendMessage(senderId, {text: message,
+
               quick_replies:[
                 {
                   content_type:'text',
@@ -123,12 +124,7 @@ function processMessage(event) {
         }
     }
 }
-"quick_replies":[
-{
-  "content_type":"text",
-    "title":"Red",
-    "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-}]
+
 
 function recordLendAmount(senderId) {
     sendMessage(senderId, {text: 'Cool, how much did you lend?'});
