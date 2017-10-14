@@ -73,7 +73,7 @@ function processPostback(event) {
                 greeting = "Hi " + name + ". ";
             }
             var message = greeting + "My name is Finnbot, I'm here to track how much you lend to and owe people, kind of like a personal accountant but free! - and way way smarter (;";
-            sendMessage(senderId, {text: message});
+
             sendMessage(sendId, {text: 'Are you going to record how much you have borrowed from or lent someone?',
               quick_replies:[
                 {
@@ -112,11 +112,14 @@ function processMessage(event) {
                 break;
               case 'undo':
                 deleteLatestObject(senderId);
+                break;
               case 'isnumber':
                 recordLendAmount(senderId, formattedMsg);
                 recordBorrowAmount(senderId, formattedMsg);
+                break;
               default:
                 recordName(senderId, formattedMsg);
+                break;
 
 
             }
