@@ -2,7 +2,7 @@ var express = require("express");
 var request = require("request");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
-
+var User = require('./app/models/user');
 //var db = mongoose.connect(process.env.MONGODB_URI);
 //var Movie = require("./models/movie");
 
@@ -103,25 +103,17 @@ function processMessage(event) {
         // You may get a text or attachment but not both
         if (message.text) {
             var formattedMsg = message.text.toLowerCase().trim();
-            switch (formattedMsg) {
-              case 'lend':
+            if (formattedMsg=='lend') {
                 requestLendAmount(senderId);
-                break;
-              case 'borrow':
+            } else if (formattedMsg=='borrow') {
                 requestBorrowAmount(senderId);
-                break;
-              case 'undo':
+            } else if (formattedMsg=='undo') {
                 deleteLatestObject(senderId);
-                break;
-              case 'isnumber':
+            } else if (!isNaN(formattedMsg)) {
                 recordLendAmount(senderId, formattedMsg);
                 recordBorrowAmount(senderId, formattedMsg);
-                break;
-              default:
+            } else {
                 recordName(senderId, formattedMsg);
-                break;
-
-
             }
         } else if (message.attachments) {
             sendMessage(senderId, {
@@ -148,9 +140,31 @@ function requestBorrowAmount(senderId) {
     sendMessage(senderId, {text: 'Cool, how much did you borrow?'});
 }
 
-function recordLendAmount(senderId, formattedMsg) {
-    sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});//possobility to add the most used people as quick replies
-}//the rply to this should come with a payload indicating its a name and then the same for money
+function recordLendAmount(senderId, formattedMsg){
+    var senderId = senderId; //what elese can i get form the sender? and is senderid  constant?
+    var amount = formattedMsg;
+    User.find({user_id: senderId }).exec(function(err, result) {
+          if (!err) {
+            //insert amount as lend or borrow
+            User.lends.push({ lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount});//not sure if object id is right there, reason and name to be added later?
+    })
+          } else {
+              console.log(err)
+              var newUser = new User({
+                user_id: senderId,
+                lends: [{
+                  lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount
+                }]
+                borrows: {}
+            })
+          };
+        });
+
+    sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});
+}
+
+//possobility to add the most used people as quick replies
+//the rply to this should come with a payload indicating it's a name and then the same for money
 
 function recordBorrowAmount(senderId) {
     sendMessage(senderId, {text: '"Awesome! Who did you lend this to?"'});
