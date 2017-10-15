@@ -2,7 +2,7 @@ var express = require("express");
 var request = require("request");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
-var User = require('./app/models/user');
+var User = require('./models/user');
 //var db = mongoose.connect(process.env.MONGODB_URI);
 //var Movie = require("./models/movie");
 
@@ -147,15 +147,14 @@ function recordLendAmount(senderId, formattedMsg){
           if (!err) {
             //insert amount as lend or borrow
             User.lends.push({ lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount});//not sure if object id is right there, reason and name to be added later?
-    })
           } else {
               console.log(err)
               var newUser = new User({
                 user_id: senderId,
                 lends: [{
                   lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount
-                }]
-                borrows: {}
+                }],
+                borrows: [{}]
             })
           };
         });
