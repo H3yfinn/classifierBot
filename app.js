@@ -8,7 +8,7 @@ var db = mongoose.connect('mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@
 var User = require('./models/user');
 //var db = mongoose.connect(process.env.MONGODB_URI);
 //var Movie = require("./models/movie");
-
+User.drop();
 var app = express();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
