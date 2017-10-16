@@ -1,7 +1,10 @@
+console.log('fukn yeahaw');
 var express = require("express");
 var request = require("request");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
+mongoose.Promise = global.Promise; //fixes mongoose promise depreciation
+var db = mongoose.connect('mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr');
 var User = require('./models/user');
 //var db = mongoose.connect(process.env.MONGODB_URI);
 //var Movie = require("./models/movie");
@@ -96,7 +99,7 @@ function processMessage(event) {
     if (!event.message.is_echo) {
         var message = event.message;
         var senderId = event.sender.id;
-
+        var messageId = event.message.mid
         console.log("Received message from senderId: " + senderId);
         console.log("Message is: " + JSON.stringify(message));
 
@@ -110,10 +113,11 @@ function processMessage(event) {
             } else if (formattedMsg=='undo') {
                 deleteLatestObject(senderId);
             } else if (!isNaN(formattedMsg)) {
-                recordLendAmount(senderId, formattedMsg);
-                recordBorrowAmount(senderId, formattedMsg);
-            } else {
-                recordName(senderId, formattedMsg);
+                recordLendAmount(senderId, formattedMsg, messageId);
+                //recordBorrowAmount(senderId, formattedMsg, messageId);
+            } else if (formattedMsg=='balance') {
+                displayBalance(senderId);
+            } else { recordName(senderId, formattedMsg);
             }
         } else if (message.attachments) {
             sendMessage(senderId, {
@@ -139,34 +143,54 @@ function requestLendAmount(senderId) {
 function requestBorrowAmount(senderId) {
     sendMessage(senderId, {text: 'Cool, how much did you borrow?'});
 }
-
-function recordLendAmount(senderId, formattedMsg){
+function recordLendAmount(senderId, formattedMsg, messageId){
     var senderId = senderId; //what elese can i get form the sender? and is senderid  constant?
     var amount = formattedMsg;
-    User.find({user_id: senderId }).exec(function(err, result) {
-          if (!err) {
-            //insert amount as lend or borrow
-            User.lends.push({ lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount});//not sure if object id is right there, reason and name to be added later?
-          } else {
-              console.log(err)
-              var newUser = new User({
+    User.find({user_id: senderId }).exec(function(err, user) {
+          if (!user.length) {
+            var newUser = new User({
                 user_id: senderId,
                 lends: [{
-                  lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount
-                }],
-                borrows: [{}]
-            })
+                  lendId: messageId, created_at: new Date(), amount: amount
+                }]
+            }, function(err) {
+                if (err) return console.log(err);
+            });
+            newUser.save(function(err) {
+                if (err) return console.log(err);
+            });
+
+          } else {
+            //insert amount as lend or borrow
+            User.update({'user_id': senderId}, {$push: {'lends': {'lendId': messageId, 'amount': formattedMsg}}}, function(err){
+              if (err) return console.log(err);
+            });
+
+            //user.lends.push({ lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount});//not sure if object id is right there, reason and name to be added later? and is 'user' referencing what user?
           };
         });
 
-    sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});
+    //sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});
 }
-
 //possobility to add the most used people as quick replies
 //the rply to this should come with a payload indicating it's a name and then the same for money
 
 function recordBorrowAmount(senderId) {
     sendMessage(senderId, {text: '"Awesome! Who did you lend this to?"'});
+}
+
+function displayBalance(senderId) {
+    User.findOne({user_id: senderId }).exec(function(err, user) {
+      if (user) {
+        balance = 0
+        user.lends.forEach((lend) => { balance += lend.amount});
+        console.log(balance)
+        //add up all the lends vs borrows
+      } else {
+        //console.log(err, "Looks like you haven't recorded anything yet")//check what the rror is in a few tests
+        sendMessage(senderId, {text: "Looks like you haven't recorded anything yet"})
+      }
+    })
 }
 function recordName(senderId, formattedMsg){
     sendMessage(senderId, {text: "Thanks for that. Everything is recorded. Use the buttons below to choose your next action"});
@@ -187,3 +211,68 @@ function sendMessage(recipientId, message) {
         }
     });
 }
+
+
+
+
+var uId = '123456'
+var lId = 'sdhgiuyasg'
+var bId = 'uaduishfui'
+var bId2 = '2uaduishfui'
+//recordLendAmount1('1234', '100');
+//displayBalance1('1234');
+/*
+var finn = new User({
+          user_id: uId,
+          lends: [{ lendId: lId, //not sure if this is right
+                    created_at: new Date(),
+                    name: 'finn',
+                    amount: '5',
+                    reason: 'paknsave'}],
+          borrows: [{ borrowId: bId, //not sure if this is right
+                    created_at: new Date(),
+                    name: 'finn',
+                    amount: '5',
+                    reason: 'paknsave'},
+                    { borrowId: bId2, //not sure if this is right
+                      created_at: new Date(),
+                      name: 'finn',
+                      amount: '5',
+                      reason: 'paknsave'}]
+
+}, function(err, obj) {
+    if (err) return console.log(err);
+    console.log(obj);
+ });
+
+finn.save(function(err) {
+  if (err) return console.log(err);
+});
+
+
+User.remove({}, function(err) {
+  console.log('h')
+});
+*/
+//recordLendAmount('12343', '12331', '12331')
+/*
+User.find({'user_id': '1233'}, function(err, result){
+  if (err) console.log(err);
+  //console.log(result)
+  balance = 0
+  //console.log(result[0].lends[0].amount)
+  result[0].lends.forEach((lend) => { balance += lend.amount});
+
+  for (var lend in result[0].lends) {
+    console.log(lend.amount)
+    //balance += lend.amount;
+  }
+  console.log(balance)
+});
+*/
+/*
+User.remove({ 'user_id': uId}, function(err) {
+  if (err) return console.log(err);
+});
+*/
+displayBalance('1233')
