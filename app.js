@@ -6,6 +6,7 @@ var mongoose = require("mongoose");
 mongoose.Promise = global.Promise; //fixes mongoose promise depreciation
 var db = mongoose.connect('mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr');
 var User = require('./models/user');
+var UserMessage = require('./models/userMessages');
 //var db = mongoose.connect(process.env.MONGODB_URI);
 //var Movie = require("./models/movie");
 
@@ -117,8 +118,13 @@ function processMessage(event) {
                 //recordBorrowAmount(senderId, formattedMsg, messageId);
             } else if (formattedMsg=='balance') {
                 displayBalance(senderId);
+            } else if (formattedMsg=='messages_view') {
+                  viewMessages(senderId); // to delete. security concern!
+            } else if (formattedMsg=='wipe') {
+                wipeUserData(senderId);
             } else { recordName(senderId, formattedMsg);
-            }
+            };
+            recordMessage(event); //make this asynchromnous?
         } else if (message.attachments) {
             sendMessage(senderId, {
               text: "Sorry, I don't understand your request.",
@@ -133,6 +139,27 @@ function processMessage(event) {
     }
 }
 
+function viewMessages(senderId){
+  UserMessage.find({}, function(err, result){
+    console.log('userMessages being printed!', result);
+  });
+};
+
+function recordMessage(event) {
+  console.log('event being printed!', event)
+  var newMessage = new UserMessage({
+      user_id: event.sender.id,
+      timestamp: event.timestamp,
+      message_id: event.message.mid,
+      text: event.message.text
+  }, function(err) {
+      if (err) return console.log(err);
+  });
+  newMessage.save(function(err) {
+      if (err) return console.log(err);
+  });
+
+}
 function deleteLatestObject(senderId){
     sendMessage(senderId, {text:"We've reset your latest entry"})//will this remove entries in database as well? Important that transparency is ahceived
 }
@@ -194,6 +221,12 @@ function displayBalance(senderId) {
 }
 function recordName(senderId, formattedMsg){
     sendMessage(senderId, {text: "Thanks for that. Everything is recorded. Use the buttons below to choose your next action"});
+}
+
+function wipeUserdata(senderId){
+  User.remove({'user_id': senderId}, function(err) {
+    sendMessage(senderId, {text: "We've wiped your records for you"})
+  });
 }
 // sends message to user
 function sendMessage(recipientId, message) {
