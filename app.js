@@ -184,7 +184,7 @@ function displayBalance(senderId) {
       if (user) {
         balance = 0
         user.lends.forEach((lend) => { balance += lend.amount});
-        console.log(balance)
+        sendMessage(senderId, {text: balance});
         //add up all the lends vs borrows
       } else {
         //console.log(err, "Looks like you haven't recorded anything yet")//check what the rror is in a few tests
@@ -276,9 +276,3 @@ User.remove({ 'user_id': uId}, function(err) {
 });
 */
 //displayBalance('1233')
-User.remove({}, function(err) {
-  console.log('h')
-});
-User.find({}, function(err, result){
-  console.log(result)
-});
