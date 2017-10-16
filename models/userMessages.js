@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 var UserMessageSchema = new Schema({
   user_id: String,
   timestamp: Number,
-  message_id: Number,
+  message_id:String,
   text: String
 });
 
