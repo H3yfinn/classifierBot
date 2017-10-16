@@ -170,7 +170,7 @@ function recordLendAmount(senderId, formattedMsg, messageId){
           };
         });
 
-    //sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});
+    sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});
 }
 //possobility to add the most used people as quick replies
 //the rply to this should come with a payload indicating it's a name and then the same for money
@@ -275,4 +275,4 @@ User.remove({ 'user_id': uId}, function(err) {
   if (err) return console.log(err);
 });
 */
-displayBalance('1233')
+//displayBalance('1233')

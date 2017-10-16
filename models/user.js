@@ -3,12 +3,12 @@ var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
   user_id: {type: String, required: true, unique: true},
-  lends: [{lendId: {type: String, unique: true}, //make this the message.mid (message id)
+  lends: [{lendId: {type: String}, //make this the message.mid (message id)
           created_at: Date,
           name: String,
           amount: Number,
           reason: String }],
-  borrows: [{borrowId: {type: String, unique: true}, //make this the message.mid (message id)
+  borrows: [{borrowId: {type: String}, //make this the message.mid (message id)
             created_at: Date,
             name: String,
             amount: Number,
