@@ -223,7 +223,7 @@ function recordName(senderId, formattedMsg){
     sendMessage(senderId, {text: "Thanks for that. Everything is recorded. Use the buttons below to choose your next action"});
 }
 
-function wipeUserdata(senderId){
+function wipeUserData(senderId){
   User.remove({'user_id': senderId}, function(err) {
     sendMessage(senderId, {text: "We've wiped your records for you"})
   });
