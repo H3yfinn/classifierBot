@@ -540,6 +540,7 @@ function sendInstructions(senderId){
 }
 
 function sendMessage(recipientId, message) {
+  return new Promise(function(resolve, reject){
     request({
         url: "https://graph.facebook.com/v2.6/me/messages",
         qs: {access_token: process.env.PAGE_ACCESS_TOKEN},
@@ -553,5 +554,6 @@ function sendMessage(recipientId, message) {
             console.log("Error sending message: " + response.error);
         }
     });
-
+    resolve()
+  });
 }
