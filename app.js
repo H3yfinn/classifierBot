@@ -540,6 +540,7 @@ function sendInstructions(senderId){
 }
 
 function sendMessage(recipientId, message) {
+  console.log('this works 4')
   return new Promise(function(resolve, reject){
     request({
         url: "https://graph.facebook.com/v2.6/me/messages",
