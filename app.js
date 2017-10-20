@@ -3,6 +3,7 @@ var request = require("request");
 var bodyParser = require("body-parser");
 
 var mongoose = require("mongoose");//chaneg the db below so its the environ one
+mongoose.Promise = global.Promise; //fixes mongoose promise depreciation
 var db = mongoose.connect(process.env.MONGODB_URI);//'mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr'
 var Images = require('./models/classifications');
 var Users = require('./models/user');
@@ -83,14 +84,21 @@ function processPostback(event) {
               if (err) return console.log(err);
             });
 
-            var message = greeting + "My name is Finnbot, I want to give you an easy way to classify things";
+            sendMessage(senderId, {text:  greeting + "My name is Finnbot, I want to give you an easy way to classify things"});
+            setTimeout(function(){ sendMessage(senderId, {text: 'For a start we need help with classifying numbers!'}); }, 3000);
 
-            sendMessage(senderId, {text: message});
-            sendMessage(senderId, {text: 'For a start we need help with classifying numbers!'});
-            sendImage(senderId);
-
+            sendImage(senderId).then(function(image){
+              if (image==false){
+                console.log('out of data!');
+                return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+              } else {
+              return sendMessage(senderId, {text: image});
+            }
+          }).catch(function(error){
+            console.log('something went wrong', error);
           });
-    }
+        }
+    )};
 }
 function processMessage(event) {
     if (!event.message.is_echo) {
