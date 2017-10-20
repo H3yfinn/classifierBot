@@ -120,7 +120,13 @@ function processMessage(event) {
                 .then(function(image){
                   if (image===false){
                     console.log('out of data!');
-                    return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+                    return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal achieved!", quick_replies:[
+                      {
+                        content_type:'text',
+                        title: 'Send Again',
+                        payload: 'xx'
+                      },
+                    ]});
                   } else {
                     return sendMessage(senderId, {text: image, quick_replies:[
                       {
@@ -140,7 +146,12 @@ function processMessage(event) {
               sendImage(senderId).then(function(image){
                 if (image===false){
                   console.log('out of data!');
-                  return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+                  return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal achieved!", quick_replies:[
+                    {
+                      content_type:'text',
+                      title: 'Send Again',
+                    },
+                  ]});
                 } else {
                   return sendMessage(senderId, {text: image, quick_replies:[
                     {
@@ -169,10 +180,11 @@ function processMessage(event) {
                 nextImage(senderId).then(function(image){
                     if (image===false){
                       console.log('out of data!');
-                      return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!", quick_replies:[
+                      return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal achieved!", quick_replies:[
                         {
                           content_type:'text',
                           title: 'Send Again',
+                          payload: 'xx'
                         },
                       ]});
                     } else {
