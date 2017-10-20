@@ -4,7 +4,7 @@ var bodyParser = require("body-parser");
 
 var mongoose = require("mongoose");//chaneg the db below so its the environ one
 mongoose.Promise = global.Promise; //fixes mongoose promise depreciation
-var db = mongoose.connect(process.env.MONGODB_URI);//'mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr'
+var db = mongoose.connect('mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr');//process.env.MONGODB_URI == 'mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr'
 var Images = require('./models/classifications');
 var Users = require('./models/user');
 
@@ -72,34 +72,34 @@ function processPostback(event) {
                 name = bodyObj.first_name;
                 greeting = "Hi " + name + ". ";
             }
+            Users.findOne({'user_id': senderId}, function(err, result){
+              if (err) console.log(err);
+              if (result !== null){
+                var newUser = new Users({
+                  user_id: senderId,
+                  score: 0
+                }, function(err){
+                  if (err) return console.log(err);
+                });
 
-            var newUser = new Users({
-              user_id: senderId,
-              score: 0
-            }, function(err){
-              if (err) return console.log(err);
-            });
-
-            newUser.save(function(err){
-              if (err) return console.log(err);
-            });
-
-            sendMessage(senderId, {text:  greeting + "My name is Finnbot, I want to give you an easy way to classify things"});
-            setTimeout(function(){ sendMessage(senderId, {text: 'For a start we need help with classifying numbers!'}); }, 3000);
-
-            sendImage(senderId).then(function(image){
-              if (image==false){
-                console.log('out of data!');
-                return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+                newUser.save(function(err){
+                  if (err) return console.log(err);
+                });
+                sendMessage(senderId, {text:  greeting + "My name is Finnbot, I want to give you an easy way to classify things"});
+                sendInstructions(senderId).catch(function(error){
+                  console.log('something went wrong', error);
+                });
               } else {
-              return sendMessage(senderId, {text: image});
-            }
-          }).catch(function(error){
-            console.log('something went wrong', error);
-          });
-        }
-    )};
+                sendMessage(senderId, {text: 'Welcome back ' + name});
+                sendInstructions(senderId).catch(function(error){
+                  console.log('something went wrong', error);
+                });
+              }
+            });
+        });
+    }
 }
+
 function processMessage(event) {
     if (!event.message.is_echo) {
         var message = event.message;
@@ -121,12 +121,40 @@ function processMessage(event) {
                     console.log('out of data!');
                     return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
                   } else {
-                    return sendMessage(senderId, {text: image}); }
+                    return sendMessage(senderId, {text: image, quick_replies:[
+                      {
+                        content_type:'text',
+                        title: 'Yes',
+                      },{
+                        content_type:'text',
+                        title: 'No',
+                      },
+                    ]});
+                  }
                   })
                 .catch(function(error){
                   console.log('something went wrong', error);
                 });
-
+            } else if (formattedMsg=='start'){
+              sendImage(senderId).then(function(image){
+                if (image===false){
+                  console.log('out of data!');
+                  return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+                } else {
+                  return sendMessage(senderId, {text: image, quick_replies:[
+                    {
+                      content_type:'text',
+                      title: 'Yes',
+                    },{
+                      content_type:'text',
+                      title: 'No',
+                    },
+                  ]});
+                }
+                })
+              .catch(function(error){
+                console.log('something went wrong', error);
+              });
             } else if (formattedMsg=='score') {
 
               sendUserScore('1').then(function(score){
@@ -140,9 +168,23 @@ function processMessage(event) {
                 nextImage(senderId).then(function(image){
                     if (image===false){
                       console.log('out of data!');
-                      return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+                      return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!", quick_replies:[
+                        {
+                          content_type:'text',
+                          title: 'Send Again',
+                        },
+                      ]});
                     } else {
-                      return sendMessage(senderId, {text: image}); }
+                      return sendMessage(senderId, {text: image, quick_replies:[
+                        {
+                          content_type:'text',
+                          title: 'Yes',
+                        },{
+                          content_type:'text',
+                          title: 'No',
+                        },
+                      ]});
+                    }
                     })
                 .catch(function(error){
                   console.log('something went wrong', error);
@@ -155,7 +197,15 @@ function processMessage(event) {
                   return sendMessage(senderId, {text: "Sorry we only keep track of your last image classified. You can't redo the image you classified before the last one that you reclassified. Pleasebe more accurate"});
                 } else {
                   return sendImageAgain(senderId).then(function(image){
-                    return sendMessage(senderId, {text: image});
+                    return sendMessage(senderId, {text: image, quick_replies:[
+                      {
+                        content_type:'text',
+                        title: 'Yes',
+                      },{
+                        content_type:'text',
+                        title: 'No',
+                      },
+                    ]});
                   });
                 }
               }).catch(function(error){
@@ -165,13 +215,26 @@ function processMessage(event) {
             } else if (formattedMsg=='send again') {
 
                 sendImageAgain(senderId).then(function(image){
-                  return sendMessage(senderId, {text: image});
+                  return sendMessage(senderId, {text: image, quick_replies:[
+                    {
+                      content_type:'text',
+                      title: 'Yes',
+                    },{
+                      content_type:'text',
+                      title: 'No',
+                    },
+                  ]});
                 }).catch(function(error){
                   console.log('something went wrong', error);
                 });
 
-            } else {
+            } else if (formattedMsg=='instructions') {
 
+              instructions(senderId).catch(function(error){
+                console.log('something went wrong', error);
+              });
+
+            } else {
                 sendMessage(senderId, 'Can you please say something I understand');
             }
 
@@ -426,6 +489,46 @@ function redoLatestImage(senderId){
 
 }
 
+function sendInstructions(senderId){
+  return new Promise(function(resolve, reject){
+    //send instructions
+    //if user already ahs a pending image then offer to resend image
+    sendMessage(senderId, {text: "Yes/No: To classify an image reply with 'yes' or 'no'. (In some instances we have provided buttons so you don't need to type these!)"});
+    sendMessage(senderId, {text: "Undo: To undo your last classification please send 'undo'"});
+    sendMessage(senderId, {text: "Score: We keep a track of how many images you have classified. To see this please send 'score'"});
+    sendMessage(senderId, {text: "Skip: If you're struggling with the current image then please send 'skip' and we'll give you another one."});
+    sendMessage(senderId, {text: "Send Again: If the image we last sent you is not viewable then type 'send again' and we'll send it to you again!"});
+    sendMessage(senderId, {text: "Instructions: We realise this isn't the best way to learn how to use this bot. We are working on that. If you'd like to see these instructions again then just send 'instructions'"});
+
+    Users.findOne({'user_id':senderId}, 'pending_image', function(err, result){
+      if (err) console.error(err);
+      if (result.pending_image === undefined){
+        //user is new
+        sendMessage(senderId, {text: "To start please press or send 'start'", quick_replies:[
+          {
+            content_type:'text',
+            title: 'Start',
+          },
+        ]});
+        resolve();
+
+      } else {
+
+        sendMessage(senderId, {text: "To resend your latest image, press Send Again, else skip to another", quick_replies:[
+          {
+            content_type:'text',
+            title: 'Send Again',
+          },
+          {
+            content_type:'text',
+            title: 'Skip',
+          },
+        ]});
+        resolve();
+      }
+    });
+  });
+}
 
 function sendMessage(recipientId, message) {
     request({
