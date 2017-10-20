@@ -113,7 +113,7 @@ function processMessage(event) {
             var formattedMsg = message.text.toLowerCase().trim();
 
             if (formattedMsg=='yes' || formattedMsg=='no') {
-
+              console.log('this works')
                 processClasification(senderId, formattedMsg)
                 .then(function(){
                   return sendImage(senderId); })
@@ -252,7 +252,7 @@ function processClasification(senderId, formattedMsg){
   //add one to users Score
   //make sure your last message to user was a picture
   //classify image, updating 'classifcation', 'timestamp', 'classsifier id', 'status'
-
+  console.log('this works 2')
   return new Promise(function(resolve, reject){
     Users.findOne({'user_id' : senderId}, 'last_message_to pending_image score last_message_from', function(err, result){
       if (err) console.log(err);
@@ -274,7 +274,7 @@ function processClasification(senderId, formattedMsg){
           console.error(err);
         }
       });
-
+      console.log('this works 3')
       resolve();
 
     });
