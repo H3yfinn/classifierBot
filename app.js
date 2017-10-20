@@ -74,7 +74,7 @@ function processPostback(event) {
             }
             Users.findOne({'user_id': senderId}, function(err, result){
               if (err) console.log(err);
-              if (result !== null){
+              if (result === null){
                 var newUser = new Users({
                   user_id: senderId,
                   score: 0
