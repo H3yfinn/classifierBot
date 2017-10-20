@@ -494,11 +494,17 @@ function sendInstructions(senderId){
   return new Promise(function(resolve, reject){
     //send instructions
     //if user already ahs a pending image then offer to resend image
-    sendMessage(senderId, {text: "Yes/No: To classify an image reply with 'yes' or 'no'. (In some instances we have provided buttons so you don't need to type these!)"});
-    sendMessage(senderId, {text: "Undo: To undo your last classification please send 'undo'"});
-    sendMessage(senderId, {text: "Score: We keep a track of how many images you have classified. To see this please send 'score'"});
+    sendMessage(senderId, {text: "Yes/No: To classify an image reply with 'yes' or 'no'. (In some instances we have provided buttons so you don't need to type these!)"})
+    .then(function(){sendMessage(senderId, {text: "Undo: To undo your last classification please send 'undo'"}) })
+    .then(function(){sendMessage(senderId, {text: "Score: We keep a track of how many images you have classified. To see this please send 'score'"}) })
     sendMessage(senderId, {text: "Skip: If you're struggling with the current image then please send 'skip' and we'll give you another one."});
-    sendMessage(senderId, {text: "Send Again: If the image we last sent you is not viewable then type 'send again' and we'll send it to you again!"});
+    sendMessage(senderId, {text: "Send Again: If the image we last sent you is not viewable then type 'send again' and we'll send it to you again!", quick_replies:[
+      {
+        content_type:'text',
+        title: 'Start',
+        payload: 'x'
+      }
+    ]});
     sendMessage(senderId, {text: "Instructions: We realise this isn't the best way to learn how to use this bot. We are working on that. If you'd like to see these instructions again then just send 'instructions'"});
     console.log('dewshhh')
     Users.findOne({'user_id':senderId}, 'pending_image', function(err, result){
