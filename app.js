@@ -86,9 +86,9 @@ function processPostback(event) {
                   if (err) return console.log(err);
                 });
                 sendMessage(senderId, {text:  greeting + "My name is Finnbot, I want to give you an easy way to classify things"});
-                setTimeout(sendInstructions(senderId).catch(function(error){
+                setTimeout(function(){sendInstructions(senderId).catch(function(error){
                                   console.log('something went wrong', error);
-                                }), 1000);
+                                })}, 1000);
 
               } else {
                 sendMessage(senderId, {text: 'Welcome back ' + name});
