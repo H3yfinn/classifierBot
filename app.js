@@ -1,27 +1,22 @@
-console.log('fukn yeahaw');
 var express = require("express");
 var request = require("request");
 var bodyParser = require("body-parser");
-var mongoose = require("mongoose");
-mongoose.Promise = global.Promise; //fixes mongoose promise depreciation
-var db = mongoose.connect('mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr');
-var User = require('./models/user');
-var UserMessage = require('./models/userMessages');
-//var db = mongoose.connect(process.env.MONGODB_URI);
-//var Movie = require("./models/movie");
+
+var mongoose = require("mongoose");//chaneg the db below so its the environ one
+var db = mongoose.connect(process.env.MONGODB_URI);//'mongodb://heroku_2pljwfrr:e5bper0f65s64g9uijhof85baa@ds121345.mlab.com:21345/heroku_2pljwfrr'
+var Images = require('./models/classifications');
+var Users = require('./models/user');
 
 var app = express();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.listen((process.env.PORT || 5000));
+app.listen((process.env.PORT || 5000));//is this and above needed
 
-// Server index page
 app.get("/", function (req, res) {
     res.send("Deployed!");
 });
 
 // Facebook Webhook
-// Used for verification
 app.get("/webhook", function (req, res) {
     if (req.query["hub.verify_token"] === process.env.VERIFICATION_TOKEN) {
         console.log("Verified webhook");
@@ -46,7 +41,7 @@ app.post("/webhook", function (req, res) {
                 } else if (event.message) {
                     processMessage(event);
                 }
-            });//functionality here to indicayted whtehr its a lend or borow
+            });
         });
 
         res.sendStatus(200);
@@ -76,159 +71,354 @@ function processPostback(event) {
                 name = bodyObj.first_name;
                 greeting = "Hi " + name + ". ";
             }
-            var message = greeting + "My name is Finnbot, I'm here to track how much you lend to and owe people, kind of like a personal accountant but free! - and way way smarter (;";
-            sendMessage(senderId, {text: message});
-            sendMessage(senderId, {text: 'Are you going to record how much you have borrowed from or lent someone?',
-              quick_replies:[
-                {
-                  content_type:'text',
-                  title: 'Lend',
-                  payload: 'LEND'//not needed atm
-                },
-                {
-                  content_type: 'text',
-                  title: 'Borrow',
-                  payload: 'BORROW'
-                }
-              ]
+
+            var newUser = new Users({
+              user_id: senderId,
+              score: 0
+            }, function(err){
+              if (err) return console.log(err);
             });
+
+            newUser.save(function(err){
+              if (err) return console.log(err);
+            });
+
+            var message = greeting + "My name is Finnbot, I want to give you an easy way to classify things";
+
+            sendMessage(senderId, {text: message});
+            sendMessage(senderId, {text: 'For a start we need help with classifying numbers!'});
+            sendImage(senderId);
+
           });
     }
 }
-
 function processMessage(event) {
     if (!event.message.is_echo) {
         var message = event.message;
         var senderId = event.sender.id;
-        var messageId = event.message.mid
         console.log("Received message from senderId: " + senderId);
         console.log("Message is: " + JSON.stringify(message));
 
         // You may get a text or attachment but not both
         if (message.text) {
             var formattedMsg = message.text.toLowerCase().trim();
-            if (formattedMsg=='lend') {
-                requestLendAmount(senderId);
-            } else if (formattedMsg=='borrow') {
-                requestBorrowAmount(senderId);
-            } else if (formattedMsg=='undo') {
-                deleteLatestObject(senderId);
-            } else if (!isNaN(formattedMsg)) {
-                recordLendAmount(senderId, formattedMsg, messageId);
-                //recordBorrowAmount(senderId, formattedMsg, messageId);
-            } else if (formattedMsg=='balance') {
-                displayBalance(senderId);
-            } else if (formattedMsg=='messages_view') {
-                  viewMessages(senderId); // to delete. security concern!
-            } else if (formattedMsg=='wipe') {
-                wipeUserData(senderId);
-            } else { recordName(senderId, formattedMsg);
-            };
-            recordMessage(event); //make this asynchromnous?
-        } else if (message.attachments) {
-            sendMessage(senderId, {
-              text: "Sorry, I don't understand your request.",
-              quick_replies:[
-                {
-                  content_type:'text',
-                  title: 'Red',
-                  payload: 'gg'
-                }]
+
+            if (formattedMsg=='yes' || formattedMsg=='no') {
+
+                processClasification(senderId, formattedMsg)
+                .then(function(){
+                  return sendImage(senderId); })
+                .then(function(image){
+                  if (image===false){
+                    console.log('out of data!');
+                    return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+                  } else {
+                    return sendMessage(senderId, {text: image}); }
+                  })
+                .catch(function(error){
+                  console.log('something went wrong', error);
+                });
+
+            } else if (formattedMsg=='score') {
+
+              sendUserScore('1').then(function(score){
+                return sendMessage(senderId, {text: 'your score is ' + score});
+              }).catch(function(error){
+                console.log('something went wrong', error);
               });
+
+            } else if (formattedMsg=='skip') {
+
+                nextImage(senderId).then(function(image){
+                    if (image===false){
+                      console.log('out of data!');
+                      return sendMessage(senderId, {text:"Sorry we're out of data for you to classify. Goal acheieved!"});
+                    } else {
+                      return sendMessage(senderId, {text: image}); }
+                    })
+                .catch(function(error){
+                  console.log('something went wrong', error);
+                });
+
+            } else if (formattedMsg=='undo') {
+
+              redoLatestImage(senderId).then(function(val){
+                if (val===false){
+                  return sendMessage(senderId, {text: "Sorry we only keep track of your last image classified. You can't redo the image you classified before the last one that you reclassified. Pleasebe more accurate"});
+                } else {
+                  return sendImageAgain(senderId).then(function(image){
+                    return sendMessage(senderId, {text: image});
+                  });
+                }
+              }).catch(function(error){
+                console.log('something went wrong', error);
+              });
+
+            } else if (formattedMsg=='send again') {
+
+                sendImageAgain(senderId).then(function(image){
+                  return sendMessage(senderId, {text: image});
+                }).catch(function(error){
+                  console.log('something went wrong', error);
+                });
+
+            } else {
+
+                sendMessage(senderId, 'Can you please say something I understand');
+            }
+
+        } else if (message.attachments) {
+            sendMessage(senderId, {text: "Sorry, I don't understand your request."});
         }
-    }
+      }
 }
 
-function viewMessages(senderId){
-  UserMessage.find({}, function(err, result){
-    console.log('userMessages being printed!', result);
-  });
-};
+function processClasification(senderId, formattedMsg){
+  //find user in user db.
+  //record message type
+  //get users current image
+  //add one to users Score
+  //make sure your last message to user was a picture
+  //classify image, updating 'classifcation', 'timestamp', 'classsifier id', 'status'
 
-function recordMessage(event) {
-  console.log('event being printed!', event)
-  var newMessage = new UserMessage({
-      user_id: event.sender.id,
-      timestamp: event.timestamp,
-      message_id: event.message.mid,
-      text: event.message.text
-  }, function(err) {
-      if (err) return console.log(err);
-  });
-  newMessage.save(function(err) {
-      if (err) return console.log(err);
-  });
+  return new Promise(function(resolve, reject){
+    Users.findOne({'user_id' : senderId}, 'last_message_to pending_image score last_message_from', function(err, result){
+      if (err) console.log(err);
+      result.last_message_from = 'classification';
+      //at the moment the 'if' below is not needed since score and picture are the only mesages we set
+      //'lastmessageto' to. However there is room for 'potential'!
+      //what if message wasnt about a picture? give them an option to see latest pic using sendimageagain
+      if (result.last_message_to == 'picture' || result.last_message_to == 'score'){
+        result.score += 1;
+        users_current_image = result.pending_image;
 
-}
-function deleteLatestObject(senderId){
-    sendMessage(senderId, {text:"We've reset your latest entry"})//will this remove entries in database as well? Important that transparency is ahceived
-}
-function requestLendAmount(senderId) {
-    sendMessage(senderId, {text: 'Cool, how much did you lend?'});//possobility to add the most used people as quick replies
-}//the rply to this should come with a payload indicating its a name and then the same for money
-
-function requestBorrowAmount(senderId) {
-    sendMessage(senderId, {text: 'Cool, how much did you borrow?'});
-}
-function recordLendAmount(senderId, formattedMsg, messageId){
-    var senderId = senderId; //what elese can i get form the sender? and is senderid  constant?
-    var amount = formattedMsg;
-    User.find({user_id: senderId }).exec(function(err, user) {
-          if (!user.length) {
-            var newUser = new User({
-                user_id: senderId,
-                lends: [{
-                  lendId: messageId, created_at: new Date(), amount: amount
-                }]
-            }, function(err) {
-                if (err) return console.log(err);
-            });
-            newUser.save(function(err) {
-                if (err) return console.log(err);
-            });
-
-          } else {
-            //insert amount as lend or borrow
-            User.update({'user_id': senderId}, {$push: {'lends': {'lendId': messageId, 'amount': formattedMsg}}}, function(err){
-              if (err) return console.log(err);
-            });
-
-            //user.lends.push({ lendId: mongoose.Types.ObjectId, created_at: new Date(), amount: amount});//not sure if object id is right there, reason and name to be added later? and is 'user' referencing what user?
-          };
+        Images.update({'image': users_current_image}, {'classification': formattedMsg, 'timestamp': new Date().getTime(), 'user_id': senderId, 'status': 'classified'}, function(err){
+          if (err) console.error(err);
         });
 
-    sendMessage(senderId, {text: "Awesome! Who did you lend this to?"});
-}
-//possobility to add the most used people as quick replies
-//the rply to this should come with a payload indicating it's a name and then the same for money
-
-function recordBorrowAmount(senderId) {
-    sendMessage(senderId, {text: '"Awesome! Who did you lend this to?"'});
-}
-
-function displayBalance(senderId) {
-    User.findOne({user_id: senderId }).exec(function(err, user) {
-      if (user) {
-        balance = 0
-        user.lends.forEach((lend) => { balance += lend.amount});
-        sendMessage(senderId, {text: balance});
-        //add up all the lends vs borrows
-      } else {
-        //console.log(err, "Looks like you haven't recorded anything yet")//check what the rror is in a few tests
-        sendMessage(senderId, {text: "Looks like you haven't recorded anything yet"})
       }
-    })
-}
-function recordName(senderId, formattedMsg){
-    sendMessage(senderId, {text: "Thanks for that. Everything is recorded. Use the buttons below to choose your next action"});
-}
+      result.save(function (err) {
+        if (err) {
+          console.error(err);
+        }
+      });
 
-function wipeUserData(senderId){
-  User.remove({'user_id': senderId}, function(err) {
-    sendMessage(senderId, {text: "We've wiped your records for you"})
+      resolve();
+
+    });
+
   });
 }
-// sends message to user
+
+function sendImage(senderId){
+  // Get random unclassified image
+  //update images status
+  //update users last_message_to, last_image and pending_image
+  //send image to be messaged
+  return new Promise(function(resolve, reject){
+    Images.count({'status': 'not classified'}).exec(function (err, count) {
+      if (err) console.error(err);
+      if (count !== 0){//check that count would == 0
+        // Get a random entry
+        var random = Math.floor(Math.random() * count);
+
+        // Again query all images but only fetch one offset by our random #
+        Images.findOne({'classification': null}).select('status image').skip(random).exec(
+          function(err, result) {
+            // Tada! random unclassified image 0:
+
+            if (err) console.error(err);
+            result.status = 'being classified';
+            image = result.image;
+            result.save(function(err){
+              if(err) {
+                console.error(err);
+              }
+            });
+
+            Users.findOne({'user_id': senderId}, 'pending_image last_image last_message_to', function(err, user){
+                if (err) console.error(err);
+
+                user.last_message_to = 'picture';
+                user.last_image = user.pending_image;
+                user.pending_image = image;
+
+                user.save(function(err) {
+                  if (err) {
+                    console.error(err);
+                  }
+                });
+              });
+
+          resolve(image);
+
+        });
+      } else {
+        resolve(false);
+      }
+    });
+  });
+}
+
+function sendImageAgain(senderId){
+  //find user in user db.
+  //get users current image
+  //send users current image
+  return new Promise(function(resolve, reject){
+
+    Users.findOne({'user_id': senderId}, 'pending_image last_message_to', function(err, user){
+        if (err) console.error(err);
+
+        image = user.pending_image;
+        user.last_message_to = 'picture';
+        user.last_message_from = 'resend';
+
+        user.save(function (err) {
+          if (err) {
+            console.error(err);
+          }
+        });
+
+        resolve(image);
+
+    });
+  });
+}
+
+function sendUserScore(senderId){
+  //look up users 'score'
+  //change users messages values
+  //send score
+  return new Promise(function(resolve, reject){
+
+    Users.findOne({'user_id': senderId}, 'score pending_image last_message_to last_message_from', function(err, user){
+        if (err) console.error(err);
+
+        score = user.score;
+        user.last_message_to = 'score';
+        user.last_message_from = 'score';
+
+        user.save(function (err) {
+          if (err) {
+            console.error(err);
+          }
+        });
+
+      resolve(score);
+
+    });
+  });
+}
+
+
+
+function nextImage(senderId){
+  //update pedning image's status to not classified
+  //change users pending image to prevent user trying to redo a cancelled image & lastmessagefrom
+
+  return new Promise(function(resolve, reject){
+    //find users current image and get ready to update certain values
+    Users.findOne({'user_id': senderId}, 'pending_image last_image last_message_from', function(err, user){
+        if (err) console.error(err);
+
+      //update users pendingimage entry in images so it's 'not classified'
+      Images.findOne({'image': user.pending_image}, 'status', function(err, result){
+        if (err) console.error(err);
+        result.status = 'not classified';
+        result.save(function (err) {
+          if (err) {
+            console.error(err);
+          }
+        });
+      });
+      //find new image for user
+      Images.count({'status':'not classified', 'image': {$ne: user.pending_image}}).exec(function (err, count) {
+        if (err) console.error(err);
+        if (count !== 0){
+          // Get a random entry
+          var random = Math.floor(Math.random() * count);
+
+          // Again query all images but only fetch one offset by our random #
+          Images.findOne({'classification': null, 'image': {$ne: user.pending_image}}).select('status image').skip(random).exec(
+            function(err, result) {
+              // Tada! random unclassified image 0:
+
+              if (err) console.error(err);
+              result.status = 'being classified';
+              image = result.image;
+              result.save(function(err){
+                if(err) {
+                  console.error(err);
+                }
+              });
+
+              user.pending_image = image;
+              user.last_message_from = 'next image';
+              user.save(function (err) {
+                if (err) {
+                  console.error(err);
+                }
+              });
+
+              resolve(image);
+
+            });
+          } else {
+            resolve(false);
+          }
+      });
+    });
+  });
+}
+
+
+function redoLatestImage(senderId){
+  return new Promise(function(resolve, reject){
+    //get usrs last image and set its status(+timestamp, classifcation, classifer id)
+    //to being classified whilst setting pending image to not classified
+    //get users last image and set users pending image to it.
+    //set users last_image to 'redone'
+    //if users last image was cancelled then obviouslythe above is irrelevant and we tell the user
+    //potenital in future to allow user to redo all their images just by searching the
+    //database for images classifeid by that user
+    Users.findOne({'user_id': senderId}, 'pending_image last_image', function(err, user){
+        if (err) console.error(err);
+
+        if (user.last_image != 'redone'){
+          Images.update({'image': user.pending_image}, {'status': 'not classified'}, function(err){
+            if (err) console.error(err);
+          });
+          Images.update({'image': user.last_image},
+          {'status': 'being classified', 'classification':null, 'timestamp':null, 'user_id':null},
+          function(err){
+            if (err) console.error(err);
+          });
+
+          user.pending_image = user.last_image;
+          user.last_image = 'redone';//make sure this doesnt cause any problems
+
+          user.save(function (err) {
+            if (err) {
+              console.error(err);
+            }
+          });
+
+          resolve();
+
+        } else {
+          //cant redo twice in a row on this version of classifier messenger!
+          resolve(false);
+        }
+     });
+  });
+  //send usersLastLast image Now and if we want to ensure best UX then change users 'next' image in db to
+  //their current image so when they're finished with the image that will be posted they will get the other
+  //image they didnt get to classfiy.
+  //the above is something we could do for 'potential'
+
+}
+
+
 function sendMessage(recipientId, message) {
     request({
         url: "https://graph.facebook.com/v2.6/me/messages",
@@ -243,69 +433,5 @@ function sendMessage(recipientId, message) {
             console.log("Error sending message: " + response.error);
         }
     });
+
 }
-
-
-
-
-var uId = '123456'
-var lId = 'sdhgiuyasg'
-var bId = 'uaduishfui'
-var bId2 = '2uaduishfui'
-//recordLendAmount1('1234', '100');
-//displayBalance1('1234');
-/*
-var finn = new User({
-          user_id: uId,
-          lends: [{ lendId: lId, //not sure if this is right
-                    created_at: new Date(),
-                    name: 'finn',
-                    amount: '5',
-                    reason: 'paknsave'}],
-          borrows: [{ borrowId: bId, //not sure if this is right
-                    created_at: new Date(),
-                    name: 'finn',
-                    amount: '5',
-                    reason: 'paknsave'},
-                    { borrowId: bId2, //not sure if this is right
-                      created_at: new Date(),
-                      name: 'finn',
-                      amount: '5',
-                      reason: 'paknsave'}]
-
-}, function(err, obj) {
-    if (err) return console.log(err);
-    console.log(obj);
- });
-
-finn.save(function(err) {
-  if (err) return console.log(err);
-});
-
-
-User.remove({}, function(err) {
-  console.log('h')
-});
-*/
-//recordLendAmount('12343', '12331', '12331')
-/*
-User.find({'user_id': '1233'}, function(err, result){
-  if (err) console.log(err);
-  //console.log(result)
-  balance = 0
-  //console.log(result[0].lends[0].amount)
-  result[0].lends.forEach((lend) => { balance += lend.amount});
-
-  for (var lend in result[0].lends) {
-    console.log(lend.amount)
-    //balance += lend.amount;
-  }
-  console.log(balance)
-});
-*/
-/*
-User.remove({ 'user_id': uId}, function(err) {
-  if (err) return console.log(err);
-});
-*/
-//displayBalance('1233')
