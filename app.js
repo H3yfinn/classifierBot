@@ -231,7 +231,7 @@ function processMessage(event) {
                     content_type:'text',
                     title: 'Send latest image',
                     payload: 'g'//payload is needed but irrelevant
-                  }});
+                  }]});
               }).catch(function(error){
                 console.log('something went wrong', error);
               });
