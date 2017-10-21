@@ -454,7 +454,7 @@ function sendImage(senderId){
         var random = Math.floor(Math.random() * count);
 
         // Again query all images but only fetch one offset by our random #
-        Images.findOne({'classification': 'not classified'}).select('status image_url _id').skip(random).exec(
+        Images.findOne({'status': 'not classified'}).select('status image_url _id').skip(random).exec(
           function(err, result) {
             // Tada! random unclassified image 0:
 
@@ -572,7 +572,7 @@ function nextImage(senderId){
           var random = Math.floor(Math.random() * count);
 
           // Again query all images but only fetch one offset by our random #
-          Images.findOne({'classification': 'not classified', '_id': {$ne: mongoose.mongo.ObjectId(user.pending_image)}}).select('image_url status _id').skip(random).exec(
+          Images.findOne({'status': 'not classified', '_id': {$ne: mongoose.mongo.ObjectId(user.pending_image)}}).select('image_url status _id').skip(random).exec(
             function(err, result) {
               // Tada! random unclassified image 0:
 
@@ -623,7 +623,7 @@ function redoLatestImage(senderId){
             if (err) console.error(err);
           });
           Images.update({'image':  mongoose.mongo.ObjectId(user.last_image)},
-          {'status': 'being classified', 'classification':'not classified', 'timestamp':null, 'user_id':null},
+          {'status': 'being classified', 'classification':null, 'timestamp':null, 'user_id':null},
           function(err){
             if (err) console.error(err);
           });
