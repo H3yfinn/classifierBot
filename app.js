@@ -127,6 +127,11 @@ function processMessage(event) {
                         title: 'Send Again',
                         payload: 'g'//payload is needed but irrelevant
                       },
+                      {
+                        content_type:'text',
+                        title: 'Score',
+                        payload: 'g'//payload is needed but irrelevant
+                      }
                     ]});
                   } else {
                     sendMessage(senderId, {text: 'Bird, yes or no?'});
@@ -151,6 +156,11 @@ function processMessage(event) {
                             content_type:'text',
                             title: 'Skip',
                             payload: 'g'//payload is needed but irrelevant
+                          },
+                          {
+                            content_type:'text',
+                            title: 'Score',
+                            payload: 'g'//payload is needed but irrelevant
                           }
                         ]
                       })
@@ -170,6 +180,11 @@ function processMessage(event) {
                       title: 'Send Again',
                       payload: 'g'//payload is needed but irrelevant
                     },
+                    {
+                      content_type:'text',
+                      title: 'Score',
+                      payload: 'g'//payload is needed but irrelevant
+                    }
                   ]});
                 } else {
                   sendMessage(senderId, {text: 'Bird, yes or no?'});
@@ -193,6 +208,11 @@ function processMessage(event) {
                         {
                           content_type:'text',
                           title: 'Skip',
+                          payload: 'g'//payload is needed but irrelevant
+                        },
+                        {
+                          content_type:'text',
+                          title: 'Score',
                           payload: 'g'//payload is needed but irrelevant
                         }
                       ]
@@ -222,9 +242,14 @@ function processMessage(event) {
                           title: 'Send Again',
                           payload: 'xx'
                         },
+                        {
+                          content_type:'text',
+                          title: 'Score',
+                          payload: 'g'//payload is needed but irrelevant
+                        }
                       ]});
                     } else {
-                      sendMessge(senderId, {text: 'Bird, yes or no?'});
+                      sendMessage(senderId, {text: 'Bird, yes or no?'});
                       return sendMessage(senderId, {
                         attachment:{
                           type:"image",
@@ -245,6 +270,11 @@ function processMessage(event) {
                           {
                             content_type:'text',
                             title: 'Skip',
+                            payload: 'g'//payload is needed but irrelevant
+                          },
+                          {
+                            content_type:'text',
+                            title: 'Score',
                             payload: 'g'//payload is needed but irrelevant
                           }
                         ]
@@ -284,6 +314,11 @@ function processMessage(event) {
                           content_type:'text',
                           title: 'Skip',
                           payload: 'g'//payload is needed but irrelevant
+                        },
+                        {
+                          content_type:'text',
+                          title: 'Score',
+                          payload: 'g'//payload is needed but irrelevant
                         }
                       ]
                     })
@@ -319,6 +354,11 @@ function processMessage(event) {
                         content_type:'text',
                         title: 'Skip',
                         payload: 'g'//payload is needed but irrelevant
+                      },
+                      {
+                        content_type:'text',
+                        title: 'Score',
+                        payload: 'g'//payload is needed but irrelevant
                       }
                     ]
                   })
@@ -343,8 +383,13 @@ function processMessage(event) {
                     quick_replies:[
                       {
                         content_type:'text',
-                        title: 'Start',
+                        title: 'Send again',
                         payload: 'x'
+                      },
+                      {
+                        content_type:'text',
+                        title: 'Score',
+                        payload: 'g'//payload is needed but irrelevant
                       }
                     ]
                   })
