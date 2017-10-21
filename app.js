@@ -555,9 +555,9 @@ function sendInstructions(senderId){
 var queue = [];
 var queueProcessing = false;
 
-function queueRequest(request) {
+function queueRequest(req) {
     console.log('this works 6')
-    queue.push(request);
+    queue.push(req);
     if (queueProcessing) {
         return;
     }
@@ -586,7 +586,7 @@ function processQueue() {
 function sendMessage(recipientId, message) {
   console.log('this works 4')
   return new Promise(function(resolve, reject){
-    request = {
+    req = {
         url: "https://graph.facebook.com/v2.6/me/messages",
         qs: {access_token: process.env.PAGE_ACCESS_TOKEN},
         method: "POST",
@@ -595,7 +595,7 @@ function sendMessage(recipientId, message) {
             message: message,
         }
     }
-    queueRequest(request)
+    queueRequest(req)
     console.log('this works 5')
     resolve()
   });
