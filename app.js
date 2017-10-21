@@ -578,6 +578,8 @@ function processQueue() {
     request(currentRequest, function(error, response, body) {
         if (error || response.body.error) {
             console.log("Error sending messages!");
+            console.error(error)
+            console.error(response.body.error)
         }
         processQueue();
     });
