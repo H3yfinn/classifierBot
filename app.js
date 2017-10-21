@@ -86,6 +86,7 @@ function processPostback(event) {
                   if (err) return console.log(err);
                 });
                 sendMessage(senderId, {text:  greeting + "My name is Finnbot, I want to give you an easy way to classify things"});
+                sendMessage(senderId, {text:  "This bot is used to help classify birds to help the Cacophony Project. You can read about what they're doing here (cacophony.org.nz)"});
                 setTimeout(function(){sendInstructions(senderId).catch(function(error){
                                   console.log('something went wrong', error);
                                 })}, 1000);
@@ -112,7 +113,7 @@ function processMessage(event) {
         if (message.text) {
             var formattedMsg = message.text.toLowerCase().trim();
 
-            if (formattedMsg=='yes' || formattedMsg=='no') {
+            if (formattedMsg=='yes' || formattedMsg=='no'/* || formattedMsg=='bird' || formattedMsg=='not' || formattedMsg=='not a bird'*/) {
               console.log('this works')
                 processClasification(senderId, formattedMsg)
                 .then(function(){
@@ -128,6 +129,7 @@ function processMessage(event) {
                       },
                     ]});
                   } else {
+                    sendMesage(senderId, {text: 'Bird or not a bird?'});
                     sendMessage(senderId, {
                         attachment:{
                           type:"image",
@@ -165,7 +167,9 @@ function processMessage(event) {
                     },
                   ]});
                 } else {
-                  return sendMessage(senderId, {
+                  return
+                  sendMesage(senderId, {text: 'Bird or not a bird?'});
+                  sendMessage(senderId, {
                       attachment:{
                         type:"image",
                         payload:{
@@ -211,7 +215,8 @@ function processMessage(event) {
                         },
                       ]});
                     } else {
-                      return sendMessage(senderId, {
+                      return sendMesage(senderId, {text: 'Bird or not a bird?'});
+                      sendMessage(senderId, {
                         attachment:{
                           type:"image",
                           payload:{
@@ -236,14 +241,15 @@ function processMessage(event) {
                         console.log('something went wrong', error);
                       });
 
-            } else if (formattedMsg=='undo') {
+            } else if (formattedMsg=='undo' || formattedMsg=='redo') {
 
               redoLatestImage(senderId).then(function(val){
                 if (val===false){
                   return sendMessage(senderId, {text: "Sorry we only keep track of your last image classified. You can't redo the image you classified before the last one that you reclassified. Pleasebe more accurate"});
                 } else {
                   return sendImageAgain(senderId).then(function(image){
-                    return sendMessage(senderId, {
+                    return sendMesage(senderId, {text: 'Bird or not a bird?'});
+                    sendMessage(senderId, {
                       attachment:{
                         type:"image",
                         payload:{
@@ -272,7 +278,8 @@ function processMessage(event) {
             } else if (formattedMsg=='send again') {
 
                 sendImageAgain(senderId).then(function(image){
-                  return sendMessage(senderId, {
+                  return sendMesage(senderId, {text: 'Bird or not a bird?'});
+                  sendMessage(senderId, {
                     attachment:{
                       type:"image",
                       payload:{
@@ -302,12 +309,11 @@ function processMessage(event) {
               });
 
             } else {
-                /*sendMessage(senderId, {text: 'Can you please say something I understand'});*/
                 sendMessage(senderId, {
                     "attachment":{
                       "type":"image",
                       "payload":{
-                        "url":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyZ61_wQUi8XMk0TA0RmMXv7-6L326WS-0QZg-Dcgt--mK6ydmcg"
+                        "url":"http://www.funny-animalpictures.com/media/content/items/images/funnybirds0032_O.jpg"
                       }
                     },
                     quick_replies:[
@@ -318,6 +324,7 @@ function processMessage(event) {
                       }
                     ]
                   })
+                sendMessage(senderId, {text: 'Can you please say something I understand'});
           }
 
         } else if (message.attachments) {
@@ -666,3 +673,40 @@ function sendMessage(recipientId, message) {
     resolve()
   });
 }
+
+
+
+
+
+var newI = new Images({
+  image_url: 'https://i.pinimg.com/736x/53/9b/65/539b656998d2d234356db92ea757d1d9--fractal-art-fractals.jpg',
+  status: 'not classified'
+}, function(err){
+  if (err) return console.log(err);
+});
+
+newI.save(function(err){
+  if (err) return console.log(err);
+});
+
+var newI = new Images({
+  image_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThurHLSr8Ul5nMQklw9DJ3OrB282t9HrMJW_iQba684mge3tDxbQ',
+  status: 'not classified'
+}, function(err){
+  if (err) return console.log(err);
+});
+
+newI.save(function(err){
+  if (err) return console.log(err);
+});
+
+var newI = new Images({
+  image_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6N-dL5vHAOHh6NBMpOQmaYny8eWRVK2SWW3icHgv_fyP0JEpZ',
+  status: 'not classified'
+}, function(err){
+  if (err) return console.log(err);
+});
+
+newI.save(function(err){
+  if (err) return console.log(err);
+});
