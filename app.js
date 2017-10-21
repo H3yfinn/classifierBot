@@ -144,7 +144,9 @@ function processMessage(event) {
                 .catch(function(error){
                   console.log('something went wrong', error);
                 });
+
             } else if (formattedMsg=='start'){
+
               sendImage(senderId).then(function(image){
                 if (image===false){
                   console.log('out of data!');
@@ -172,9 +174,10 @@ function processMessage(event) {
               .catch(function(error){
                 console.log('something went wrong', error);
               });
+
             } else if (formattedMsg=='score') {
 
-              sendUserScore('1').then(function(score){
+              sendUserScore(senderId).then(function(score){
                 return sendMessage(senderId, {text: 'your score is ' + score});
               }).catch(function(error){
                 console.log('something went wrong', error);
@@ -259,7 +262,7 @@ function processMessage(event) {
               });
 
             } else {
-                sendMessage(senderId, 'Can you please say something I understand');
+                sendMessage(senderId, {text: 'Can you please say something I understand'});
             }
 
         } else if (message.attachments) {
@@ -275,7 +278,6 @@ function processClasification(senderId, formattedMsg){
   //add one to users Score
   //make sure your last message to user was a picture
   //classify image, updating 'classifcation', 'timestamp', 'classsifier id', 'status'
-  console.log('this works 2')
   return new Promise(function(resolve, reject){
     Users.findOne({'user_id' : senderId}, 'last_message_to pending_image score last_message_from', function(err, result){
       if (err) console.log(err);
@@ -398,8 +400,7 @@ function sendUserScore(senderId){
             console.error(err);
           }
         });
-
-      resolve(score);
+        resolve(score);
 
     });
   });
@@ -529,13 +530,11 @@ function sendInstructions(senderId){
       }
     ]});
     sendMessage(senderId, {text: "Instructions: We realise this isn't the best way to learn how to use this bot. We are working on that. If you'd like to see these instructions again then just send 'instructions'"});
-    console.log('dewshhh')
     Users.findOne({'user_id':senderId}, 'pending_image', function(err, result){
       if (err) console.error(err);
 
       if (result.pending_image === undefined){
         //user is new
-        console.log('ewshhh')
         sendMessage(senderId, {text: "To start please press or send 'start'"/*, quick_replies:[
           {
             content_type:'text',
@@ -545,7 +544,6 @@ function sendInstructions(senderId){
         resolve();
 
       } else {
-        console.log('pewshhh')
         sendMessage(senderId, {text: "To resend your latest image, press Send Again, else skip to another", quick_replies:[
           {
             content_type:'text',
@@ -569,37 +567,30 @@ var queue = [];
 var queueProcessing = false;
 
 function queueRequest(req) {
-    console.log('this works 6')
     queue.push(req);
     if (queueProcessing) {
         return;
     }
     queueProcessing = true;
-    console.log('this works 9')
     processQueue();
 }
 
 function processQueue() {
     if (queue.length == 0) {
-        console.log('this works 7')
         queueProcessing = false;
         return;
     }
-    console.log('this works 8')
     var currentRequest = queue.shift();
-    console.log('sending a message!')
+
     request(currentRequest, function(error, response, body) {
         if (error || response.body.error) {
             console.log("Error sending messages!");
-            console.error(error)
-            console.error(response.body.error)
         }
         processQueue();
     });
 }
 
 function sendMessage(recipientId, message) {
-  console.log('this works 4')
   return new Promise(function(resolve, reject){
     req = {
         url: "https://graph.facebook.com/v2.6/me/messages",
@@ -611,7 +602,6 @@ function sendMessage(recipientId, message) {
         }
     }
     queueRequest(req)
-    console.log('this works 5')
     resolve()
   });
 }
