@@ -128,23 +128,30 @@ function processMessage(event) {
                       },
                     ]});
                   } else {
-                    return sendMessage(senderId, {text: image, quick_replies:[
-                      {
-                        content_type:'text',
-                        title: 'Yes',
-                        payload: 'g'//payload is needed but irrelevant
-                      },{
-                        content_type:'text',
-                        title: 'No',
-                        payload: 'g'//payload is needed but irrelevant
-                      },
-                    ]});
-                  }
+                    sendMessage(senderId, {
+                        attachment:{
+                          type:"image",
+                          payload:{
+                            url:image
+                          }
+                        },
+                        quick_replies:[
+                          {
+                            content_type:'text',
+                            title: 'Yes',
+                            payload: 'g'//payload is needed but irrelevant
+                          },{
+                            content_type:'text',
+                            title: 'No',
+                            payload: 'g'//payload is needed but irrelevant
+                          },
+                        ]
+                      })
+                    }
                   })
                 .catch(function(error){
                   console.log('something went wrong', error);
                 });
-
             } else if (formattedMsg=='start'){
 
               sendImage(senderId).then(function(image){
@@ -158,18 +165,26 @@ function processMessage(event) {
                     },
                   ]});
                 } else {
-                  return sendMessage(senderId, {text: image, quick_replies:[
-                    {
-                      content_type:'text',
-                      title: 'Yes',
-                      payload: 'g'//payload is needed but irrelevant
-                    },{
-                      content_type:'text',
-                      title: 'No',
-                      payload: 'g'//payload is needed but irrelevant
-                    },
-                  ]});
-                }
+                  return sendMessage(senderId, {
+                      attachment:{
+                        type:"image",
+                        payload:{
+                          url:image
+                        }
+                      },
+                      quick_replies:[
+                        {
+                          content_type:'text',
+                          title: 'Yes',
+                          payload: 'g'//payload is needed but irrelevant
+                        },{
+                          content_type:'text',
+                          title: 'No',
+                          payload: 'g'//payload is needed but irrelevant
+                        },
+                      ]
+                    })
+                  }
                 })
               .catch(function(error){
                 console.log('something went wrong', error);
@@ -196,7 +211,46 @@ function processMessage(event) {
                         },
                       ]});
                     } else {
-                      return sendMessage(senderId, {text: image, quick_replies:[
+                      return sendMessage(senderId, {
+                        attachment:{
+                          type:"image",
+                          payload:{
+                            url:image
+                          }
+                        },
+                        quick_replies:[
+                          {
+                            content_type:'text',
+                            title: 'Yes',
+                            payload: 'g'//payload is needed but irrelevant
+                          },{
+                            content_type:'text',
+                            title: 'No',
+                            payload: 'g'//payload is needed but irrelevant
+                          },
+                        ]
+                      })
+                    }
+                  })
+                      .catch(function(error){
+                        console.log('something went wrong', error);
+                      });
+
+            } else if (formattedMsg=='undo') {
+
+              redoLatestImage(senderId).then(function(val){
+                if (val===false){
+                  return sendMessage(senderId, {text: "Sorry we only keep track of your last image classified. You can't redo the image you classified before the last one that you reclassified. Pleasebe more accurate"});
+                } else {
+                  return sendImageAgain(senderId).then(function(image){
+                    return sendMessage(senderId, {
+                      attachment:{
+                        type:"image",
+                        payload:{
+                          url:image
+                        }
+                      },
+                      quick_replies:[
                         {
                           content_type:'text',
                           title: 'Yes',
@@ -206,21 +260,26 @@ function processMessage(event) {
                           title: 'No',
                           payload: 'g'//payload is needed but irrelevant
                         },
-                      ]});
-                    }
+                      ]
                     })
-                .catch(function(error){
-                  console.log('something went wrong', error);
-                });
+                  })
+                }
+              })
+              .catch(function(error){
+                    console.log('something went wrong', error);
+                  });
 
-            } else if (formattedMsg=='undo') {
+            } else if (formattedMsg=='send again') {
 
-              redoLatestImage(senderId).then(function(val){
-                if (val===false){
-                  return sendMessage(senderId, {text: "Sorry we only keep track of your last image classified. You can't redo the image you classified before the last one that you reclassified. Pleasebe more accurate"});
-                } else {
-                  return sendImageAgain(senderId).then(function(image){
-                    return sendMessage(senderId, {text: image, quick_replies:[
+                sendImageAgain(senderId).then(function(image){
+                  return sendMessage(senderId, {
+                    attachment:{
+                      type:"image",
+                      payload:{
+                        url:image
+                      }
+                    },
+                    quick_replies:[
                       {
                         content_type:'text',
                         title: 'Yes',
@@ -230,29 +289,10 @@ function processMessage(event) {
                         title: 'No',
                         payload: 'g'//payload is needed but irrelevant
                       },
-                    ]});
-                  });
-                }
-              }).catch(function(error){
-                console.log('something went wrong', error);
-              });
-
-            } else if (formattedMsg=='send again') {
-
-                sendImageAgain(senderId).then(function(image){
-                  return sendMessage(senderId, {text: image, quick_replies:[
-                    {
-                      content_type:'text',
-                      title: 'Yes',
-                      payload: 'g'//payload is needed but irrelevant
-                    },{
-                      content_type:'text',
-                      title: 'No',
-                      payload: 'g'//payload is needed but irrelevant
-                    },
-                  ]});
+                    ]
+                  })
                 }).catch(function(error){
-                  console.log('something went wrong', error);
+                    console.log('something went wrong', error);
                 });
 
             } else if (formattedMsg=='instructions') {
@@ -278,7 +318,7 @@ function processMessage(event) {
                       }
                     ]
                   })
-          };
+          }
 
         } else if (message.attachments) {
             sendMessage(senderId, {text: "Sorry, I don't understand your request."});
