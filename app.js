@@ -243,7 +243,7 @@ function processMessage(event) {
 
             } else if (formattedMsg=='instructions') {
 
-              instructions(senderId).catch(function(error){
+              sendInstructions(senderId).catch(function(error){
                 console.log('something went wrong', error);
               });
 
@@ -556,6 +556,7 @@ var queue = [];
 var queueProcessing = false;
 
 function queueRequest(request) {
+    console.log('this works 6')
     queue.push(request);
     if (queueProcessing) {
         return;
@@ -592,6 +593,7 @@ function sendMessage(recipientId, message) {
         }
     }
     queueRequest(request)
+    console.log('this works 5')
     resolve()
   });
 }
