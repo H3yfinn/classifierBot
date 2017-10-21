@@ -167,9 +167,8 @@ function processMessage(event) {
                     },
                   ]});
                 } else {
-                  return
                   sendMessage(senderId, {text: 'Bird or not a bird?'});
-                  sendMessage(senderId, {
+                  return sendMessage(senderId, {
                       attachment:{
                         type:"image",
                         payload:{
@@ -594,12 +593,13 @@ function sendInstructions(senderId){
 
       if (result.pending_image === undefined){
         //user is new
-        sendMessage(senderId, {text: "To start please press or send 'start'"/*, quick_replies:[
+        sendMessage(senderId, {text: "To start please press or send 'start'", quick_replies:[
           {
             content_type:'text',
             title: 'Start',
+            payload: 'start'
           },
-        ]*/});
+        ]});
         resolve();
 
       } else {
