@@ -562,14 +562,17 @@ function queueRequest(request) {
         return;
     }
     queueProcessing = true;
+    console.log('this works 9')
     processQueue();
 }
 
 function processQueue() {
     if (queue.length == 0) {
+        console.log('this works 7')
         queueProcessing = false;
         return;
     }
+    console.log('this works 8')
     var currentRequest = queue.shift();
     console.log('sending a message!')
     request(currentRequest, function(error, response, body) {
