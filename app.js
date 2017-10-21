@@ -49,17 +49,6 @@ app.post("/webhook", function (req, res) {
     }
 });
 
-//last minute addition to handle possible crashes while not around.
-function clientErrorHandler (err, req, res, next) {
-   if (req.xhr) {
-      res.status(500).send({ error: 'Something failed!' })
-    } else {
-      next(err)
-   }
-}
-
-app.use(clientErrorHandler);
-
 function processPostback(event) {
     var senderId = event.sender.id;
     var payload = event.postback.payload;
