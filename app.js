@@ -226,7 +226,12 @@ function processMessage(event) {
             } else if (formattedMsg=='score') {
 
               sendUserScore(senderId).then(function(score){
-                return sendMessage(senderId, {text: 'your score is ' + score});
+                return sendMessage(senderId, {text: 'your score is ' + score, quick_replies:[
+                  {
+                    content_type:'text',
+                    title: 'Send latest image',
+                    payload: 'g'//payload is needed but irrelevant
+                  }});
               }).catch(function(error){
                 console.log('something went wrong', error);
               });
@@ -329,7 +334,7 @@ function processMessage(event) {
                     console.log('something went wrong', error);
                   });
 
-            } else if (formattedMsg=='send again') {
+            } else if (formattedMsg=='send again' || formattedMsg=='Send latest image') {
 
                 sendImageAgain(senderId).then(function(image){
                   sendMessage(senderId, {text: 'Bird, yes or no?'});
