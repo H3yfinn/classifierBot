@@ -344,7 +344,7 @@ function processClasification(senderId, formattedMsg){
         result.score += 1;
         users_current_image = result.pending_image;
 
-        Images.update({'image': users_current_image}, {'classification': formattedMsg, 'timestamp': new Date().getTime(), 'user_id': senderId, 'status': 'classified'}, function(err){
+        Images.update({'_id': users_current_image}, {'classification': formattedMsg, 'timestamp': new Date().getTime(), 'user_id': senderId, 'status': 'classified'}, function(err){
           if (err) console.error(err);
         });
 
@@ -354,7 +354,6 @@ function processClasification(senderId, formattedMsg){
           console.error(err);
         }
       });
-      console.log('this works 3')
       resolve();
 
     });
@@ -375,13 +374,14 @@ function sendImage(senderId){
         var random = Math.floor(Math.random() * count);
 
         // Again query all images but only fetch one offset by our random #
-        Images.findOne({'classification': null}).select('status image').skip(random).exec(
+        Images.findOne({'classification': null}).select('status image_url _id').skip(random).exec(
           function(err, result) {
             // Tada! random unclassified image 0:
 
             if (err) console.error(err);
             result.status = 'being classified';
-            image = result.image;
+            image_id = result._id;
+            image_url = result.image_url
             result.save(function(err){
               if(err) {
                 console.error(err);
@@ -393,7 +393,7 @@ function sendImage(senderId){
 
                 user.last_message_to = 'picture';
                 user.last_image = user.pending_image;
-                user.pending_image = image;
+                user.pending_image = image_id;
 
                 user.save(function(err) {
                   if (err) {
@@ -402,7 +402,7 @@ function sendImage(senderId){
                 });
               });
 
-          resolve(image);
+          resolve(image_url);
 
         });
       } else {
@@ -421,7 +421,7 @@ function sendImageAgain(senderId){
     Users.findOne({'user_id': senderId}, 'pending_image last_message_to', function(err, user){
         if (err) console.error(err);
 
-        image = user.pending_image;
+        image_id = user.pending_image;
         user.last_message_to = 'picture';
         user.last_message_from = 'resend';
 
@@ -430,9 +430,11 @@ function sendImageAgain(senderId){
             console.error(err);
           }
         });
-
-        resolve(image);
-
+        Images.findOne({'_id': mongoose.mongo.ObjectId(image_id)}, 'image_url', function(err, image){
+          if (err) console.error(err);
+          image_url = image.image_url
+          resolve(image_url);
+        })
     });
   });
 }
@@ -473,7 +475,7 @@ function nextImage(senderId){
         if (err) console.error(err);
 
       //update users pendingimage entry in images so it's 'not classified'
-      Images.findOne({'image': user.pending_image}, 'status', function(err, result){
+      Images.findOne({'_id':  mongoose.mongo.ObjectId(user.pending_image)}, 'status', function(err, result){
         if (err) console.error(err);
         result.status = 'not classified';
         result.save(function (err) {
@@ -483,27 +485,28 @@ function nextImage(senderId){
         });
       });
       //find new image for user
-      Images.count({'status':'not classified', 'image': {$ne: user.pending_image}}).exec(function (err, count) {
+      Images.count({'status':'not classified', '_id': {$ne:  mongoose.mongo.ObjectId(user.pending_image)}}).exec(function (err, count) {
         if (err) console.error(err);
         if (count !== 0){
           // Get a random entry
           var random = Math.floor(Math.random() * count);
 
           // Again query all images but only fetch one offset by our random #
-          Images.findOne({'classification': null, 'image': {$ne: user.pending_image}}).select('status image').skip(random).exec(
+          Images.findOne({'classification': null, '_id': {$ne: mongoose.mongo.ObjectId(user.pending_image)}}).select('image_url status _id').skip(random).exec(
             function(err, result) {
               // Tada! random unclassified image 0:
 
               if (err) console.error(err);
               result.status = 'being classified';
-              image = result.image;
+              image_id = result._id;
+              image_url = result.image_url
               result.save(function(err){
                 if(err) {
                   console.error(err);
                 }
               });
 
-              user.pending_image = image;
+              user.pending_image = image_id;
               user.last_message_from = 'next image';
               user.save(function (err) {
                 if (err) {
@@ -511,7 +514,7 @@ function nextImage(senderId){
                 }
               });
 
-              resolve(image);
+              resolve(image_url);
 
             });
           } else {
@@ -536,10 +539,10 @@ function redoLatestImage(senderId){
         if (err) console.error(err);
 
         if (user.last_image != 'redone'){
-          Images.update({'image': user.pending_image}, {'status': 'not classified'}, function(err){
+          Images.update({'_id':  mongoose.mongo.ObjectId(user.pending_image)}, {'status': 'not classified'}, function(err){
             if (err) console.error(err);
           });
-          Images.update({'image': user.last_image},
+          Images.update({'image':  mongoose.mongo.ObjectId(user.last_image)},
           {'status': 'being classified', 'classification':null, 'timestamp':null, 'user_id':null},
           function(err){
             if (err) console.error(err);
@@ -617,6 +620,9 @@ function sendInstructions(senderId){
   });
 }
 
+
+//message queing system coming up! credit to Brian. See below
+//https://stackoverflow.com/questions/37152355/facebook-messenger-bot-not-sending-messages-in-order
 
 var queue = [];
 var queueProcessing = false;

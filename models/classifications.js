@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var ImageSchema = new Schema({
-  image: String,
+  image_url: String,
   status: String,//being classified, classified or not classified
   classification: Boolean,
   timestamp: Number,
