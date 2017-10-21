@@ -124,7 +124,7 @@ function processMessage(event) {
                       {
                         content_type:'text',
                         title: 'Send Again',
-                        payload: 'g'//is this needed
+                        payload: 'g'//payload is needed but irrelevant
                       },
                     ]});
                   } else {
@@ -132,9 +132,11 @@ function processMessage(event) {
                       {
                         content_type:'text',
                         title: 'Yes',
+                        payload: 'g'//payload is needed but irrelevant
                       },{
                         content_type:'text',
                         title: 'No',
+                        payload: 'g'//payload is needed but irrelevant
                       },
                     ]});
                   }
@@ -150,6 +152,7 @@ function processMessage(event) {
                     {
                       content_type:'text',
                       title: 'Send Again',
+                      payload: 'g'//payload is needed but irrelevant
                     },
                   ]});
                 } else {
@@ -157,9 +160,11 @@ function processMessage(event) {
                     {
                       content_type:'text',
                       title: 'Yes',
+                      payload: 'g'//payload is needed but irrelevant
                     },{
                       content_type:'text',
                       title: 'No',
+                      payload: 'g'//payload is needed but irrelevant
                     },
                   ]});
                 }
@@ -192,9 +197,11 @@ function processMessage(event) {
                         {
                           content_type:'text',
                           title: 'Yes',
+                          payload: 'g'//payload is needed but irrelevant
                         },{
                           content_type:'text',
                           title: 'No',
+                          payload: 'g'//payload is needed but irrelevant
                         },
                       ]});
                     }
@@ -214,9 +221,11 @@ function processMessage(event) {
                       {
                         content_type:'text',
                         title: 'Yes',
+                        payload: 'g'//payload is needed but irrelevant
                       },{
                         content_type:'text',
                         title: 'No',
+                        payload: 'g'//payload is needed but irrelevant
                       },
                     ]});
                   });
@@ -232,9 +241,11 @@ function processMessage(event) {
                     {
                       content_type:'text',
                       title: 'Yes',
+                      payload: 'g'//payload is needed but irrelevant
                     },{
                       content_type:'text',
                       title: 'No',
+                      payload: 'g'//payload is needed but irrelevant
                     },
                   ]});
                 }).catch(function(error){
@@ -539,10 +550,12 @@ function sendInstructions(senderId){
           {
             content_type:'text',
             title: 'Send Again',
+            payload: 'g'//payload is needed but irrelevant
           },
           {
             content_type:'text',
             title: 'Skip',
+            payload: 'g'//payload is needed but irrelevant
           },
         ]});
         resolve();
