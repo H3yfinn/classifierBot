@@ -385,7 +385,7 @@ function processMessage(event) {
                       }
                     }
                   })
-                return sendMessage(senderId, {text: 'Can you please say something I understand',
+                return sendMessage(senderId, {text: 'Can you please say something I understand.',
                 quick_replies:[
                   {
                     content_type:'text',
