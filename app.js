@@ -262,8 +262,22 @@ function processMessage(event) {
               });
 
             } else {
-                sendMessage(senderId, {text: 'Can you please say something I understand'});
-            }
+                /*sendMessage(senderId, {text: 'Can you please say something I understand'});*/
+                sendMessage(senderId, {
+                    "attachment":{
+                      "type":"image",
+                      "payload":{
+                        "url":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyZ61_wQUi8XMk0TA0RmMXv7-6L326WS-0QZg-Dcgt--mK6ydmcg"
+                      }
+                    },
+                    quick_replies:[
+                      {
+                        content_type:'text',
+                        title: 'Start',
+                        payload: 'x'
+                      }
+                    ]
+                  })
 
         } else if (message.attachments) {
             sendMessage(senderId, {text: "Sorry, I don't understand your request."});
