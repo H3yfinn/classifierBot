@@ -124,7 +124,7 @@ function processMessage(event) {
                       {
                         content_type:'text',
                         title: 'Send Again',
-                        payload: 'xx'
+                        payload: 'g'//is this needed
                       },
                     ]});
                   } else {
@@ -507,8 +507,8 @@ function sendInstructions(senderId){
     //send instructions
     //if user already ahs a pending image then offer to resend image
     sendMessage(senderId, {text: "Yes/No: To classify an image reply with 'yes' or 'no'. (In some instances we have provided buttons so you don't need to type these!)"})
-    .then(function(){sendMessage(senderId, {text: "Undo: To undo your last classification please send 'undo'"}) })
-    .then(function(){sendMessage(senderId, {text: "Score: We keep a track of how many images you have classified. To see this please send 'score'"}) })
+    sendMessage(senderId, {text: "Undo: To undo your last classification please send 'undo'"})
+    sendMessage(senderId, {text: "Score: We keep a track of how many images you have classified. To see this please send 'score'"})
     sendMessage(senderId, {text: "Skip: If you're struggling with the current image then please send 'skip' and we'll give you another one."});
     sendMessage(senderId, {text: "Send Again: If the image we last sent you is not viewable then type 'send again' and we'll send it to you again!", quick_replies:[
       {
@@ -551,10 +551,38 @@ function sendInstructions(senderId){
   });
 }
 
+
+var queue = [];
+var queueProcessing = false;
+
+function queueRequest(request) {
+    queue.push(request);
+    if (queueProcessing) {
+        return;
+    }
+    queueProcessing = true;
+    processQueue();
+}
+
+function processQueue() {
+    if (queue.length == 0) {
+        queueProcessing = false;
+        return;
+    }
+    var currentRequest = queue.shift();
+    console.log('sending a message!')
+    request(currentRequest, function(error, response, body) {
+        if (error || response.body.error) {
+            console.log("Error sending messages!");
+        }
+        processQueue();
+    });
+}
+
 function sendMessage(recipientId, message) {
   console.log('this works 4')
   return new Promise(function(resolve, reject){
-    request({
+    request = {
         url: "https://graph.facebook.com/v2.6/me/messages",
         qs: {access_token: process.env.PAGE_ACCESS_TOKEN},
         method: "POST",
@@ -562,11 +590,8 @@ function sendMessage(recipientId, message) {
             recipient: {id: recipientId},
             message: message,
         }
-    }, function(error, response, body) {
-        if (error) {
-            console.log("Error sending message: " + response.error);
-        }
-    });
+    }
+    queueRequest(request)
     resolve()
   });
 }
