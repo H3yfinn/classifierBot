@@ -49,6 +49,17 @@ app.post("/webhook", function (req, res) {
     }
 });
 
+//last minute addition to handle possible crashes while not around.
+function clientErrorHandler (err, req, res, next) {
+   if (req.xhr) {
+      res.status(500).send({ error: 'Something failed!' })
+    } else {
+      next(err)
+   }
+}
+
+app.use(clientErrorHandler);
+
 function processPostback(event) {
     var senderId = event.sender.id;
     var payload = event.postback.payload;
@@ -114,7 +125,6 @@ function processMessage(event) {
             var formattedMsg = message.text.toLowerCase().trim();
 
             if (formattedMsg=='yes' || formattedMsg=='no'/* || formattedMsg=='bird' || formattedMsg=='not' || formattedMsg=='not a bird'*/) {
-              console.log('this works')
                 processClasification(senderId, formattedMsg)
                 .then(function(){
                   return sendImage(senderId); })
@@ -425,7 +435,7 @@ function processClasification(senderId, formattedMsg){
         result.score += 1;
         users_current_image = result.pending_image;
 
-        Images.update({'_id': users_current_image}, {'classification': formattedMsg, 'timestamp': new Date().getTime(), 'user_id': senderId, 'status': 'classified'}, function(err){
+        Images.update({'_id': users_current_image}, {'classification': (formattedMsg=='yes' ? true : false), 'timestamp': new Date().getTime(), 'user_id': senderId, 'status': 'classified'}, function(err){
           if (err) console.error(err);
         });
 
@@ -742,42 +752,3 @@ function sendMessage(recipientId, message) {
     resolve()
   });
 }
-
-
-
-/*
-
-var newI = new Images({
-  image_url: 'https://i.pinimg.com/736x/53/9b/65/539b656998d2d234356db92ea757d1d9--fractal-art-fractals.jpg',
-  status: 'not classified'
-}, function(err){
-  if (err) return console.log(err);
-});
-
-newI.save(function(err){
-  if (err) return console.log(err);
-});
-
-var newI = new Images({
-  image_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThurHLSr8Ul5nMQklw9DJ3OrB282t9HrMJW_iQba684mge3tDxbQ',
-  status: 'not classified'
-}, function(err){
-  if (err) return console.log(err);
-});
-
-newI.save(function(err){
-  if (err) return console.log(err);
-});
-
-var newI = new Images({
-  image_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6N-dL5vHAOHh6NBMpOQmaYny8eWRVK2SWW3icHgv_fyP0JEpZ',
-  status: 'not classified'
-}, function(err){
-  if (err) return console.log(err);
-});
-
-newI.save(function(err){
-  if (err) return console.log(err);
-});
-
-*/
