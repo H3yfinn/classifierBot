@@ -129,8 +129,8 @@ function processMessage(event) {
                       },
                     ]});
                   } else {
-                    sendMessage(senderId, {text: 'Bird or not a bird?'});
-                    sendMessage(senderId, {
+                    sendMessage(senderId, {text: 'Bird, yes or no?'});
+                    return sendMessage(senderId, {
                         attachment:{
                           type:"image",
                           payload:{
@@ -147,6 +147,11 @@ function processMessage(event) {
                             title: 'No',
                             payload: 'g'//payload is needed but irrelevant
                           },
+                          {
+                            content_type:'text',
+                            title: 'Skip',
+                            payload: 'g'//payload is needed but irrelevant
+                          }
                         ]
                       })
                     }
@@ -167,7 +172,7 @@ function processMessage(event) {
                     },
                   ]});
                 } else {
-                  sendMessage(senderId, {text: 'Bird or not a bird?'});
+                  sendMessage(senderId, {text: 'Bird, yes or no?'});
                   return sendMessage(senderId, {
                       attachment:{
                         type:"image",
@@ -185,6 +190,11 @@ function processMessage(event) {
                           title: 'No',
                           payload: 'g'//payload is needed but irrelevant
                         },
+                        {
+                          content_type:'text',
+                          title: 'Skip',
+                          payload: 'g'//payload is needed but irrelevant
+                        }
                       ]
                     })
                   }
@@ -214,8 +224,8 @@ function processMessage(event) {
                         },
                       ]});
                     } else {
-                      return sendMessge(senderId, {text: 'Bird or not a bird?'});
-                      sendMessage(senderId, {
+                      sendMessge(senderId, {text: 'Bird, yes or no?'});
+                      return sendMessage(senderId, {
                         attachment:{
                           type:"image",
                           payload:{
@@ -232,6 +242,11 @@ function processMessage(event) {
                             title: 'No',
                             payload: 'g'//payload is needed but irrelevant
                           },
+                          {
+                            content_type:'text',
+                            title: 'Skip',
+                            payload: 'g'//payload is needed but irrelevant
+                          }
                         ]
                       })
                     }
@@ -247,8 +262,8 @@ function processMessage(event) {
                   return sendMessage(senderId, {text: "Sorry we only keep track of your last image classified. You can't redo the image you classified before the last one that you reclassified. Pleasebe more accurate"});
                 } else {
                   return sendImageAgain(senderId).then(function(image){
-                    return sendMessage(senderId, {text: 'Bird or not a bird?'});
-                    sendMessage(senderId, {
+                    sendMessage(senderId, {text: 'Bird, yes or no?'});
+                    return sendMessage(senderId, {
                       attachment:{
                         type:"image",
                         payload:{
@@ -265,6 +280,11 @@ function processMessage(event) {
                           title: 'No',
                           payload: 'g'//payload is needed but irrelevant
                         },
+                        {
+                          content_type:'text',
+                          title: 'Skip',
+                          payload: 'g'//payload is needed but irrelevant
+                        }
                       ]
                     })
                   })
@@ -277,8 +297,8 @@ function processMessage(event) {
             } else if (formattedMsg=='send again') {
 
                 sendImageAgain(senderId).then(function(image){
-                  return sendMessage(senderId, {text: 'Bird or not a bird?'});
-                  sendMessage(senderId, {
+                  sendMessage(senderId, {text: 'Bird, yes or no?'});
+                  return sendMessage(senderId, {
                     attachment:{
                       type:"image",
                       payload:{
@@ -295,6 +315,11 @@ function processMessage(event) {
                         title: 'No',
                         payload: 'g'//payload is needed but irrelevant
                       },
+                      {
+                        content_type:'text',
+                        title: 'Skip',
+                        payload: 'g'//payload is needed but irrelevant
+                      }
                     ]
                   })
                 }).catch(function(error){
@@ -323,7 +348,7 @@ function processMessage(event) {
                       }
                     ]
                   })
-                sendMessage(senderId, {text: 'Can you please say something I understand'});
+                return sendMessage(senderId, {text: 'Can you please say something I understand'});
           }
 
         } else if (message.attachments) {
