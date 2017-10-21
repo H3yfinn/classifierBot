@@ -85,7 +85,7 @@ function processPostback(event) {
                 newUser.save(function(err){
                   if (err) return console.log(err);
                 });
-                sendMessage(senderId, {text:  greeting + "My name is Finnbot, I want to give you an easy way to classify things"});
+                sendMessage(senderId, {text:  greeting + "My name is Finnbot, I want to give you an easy way to classify things."});
                 sendMessage(senderId, {text:  "This bot is used to help classify birds to help the Cacophony Project. You can read about what they're doing here (cacophony.org.nz)"});
                 setTimeout(function(){sendInstructions(senderId).catch(function(error){
                                   console.log('something went wrong', error);
