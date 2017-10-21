@@ -334,7 +334,7 @@ function processMessage(event) {
                     console.log('something went wrong', error);
                   });
 
-            } else if (formattedMsg=='send again' || formattedMsg=='Send latest image') {
+            } else if (formattedMsg=='send again' || formattedMsg=='send latest image') {
 
                 sendImageAgain(senderId).then(function(image){
                   sendMessage(senderId, {text: 'Bird, yes or no?'});
@@ -384,21 +384,21 @@ function processMessage(event) {
                       "payload":{
                         "url":"http://www.funny-animalpictures.com/media/content/items/images/funnybirds0032_O.jpg"
                       }
-                    },
-                    quick_replies:[
-                      {
-                        content_type:'text',
-                        title: 'Send again',
-                        payload: 'x'
-                      },
-                      {
-                        content_type:'text',
-                        title: 'Score',
-                        payload: 'g'//payload is needed but irrelevant
-                      }
-                    ]
+                    }
                   })
-                return sendMessage(senderId, {text: 'Can you please say something I understand'});
+                return sendMessage(senderId, {text: 'Can you please say something I understand',
+                quick_replies:[
+                  {
+                    content_type:'text',
+                    title: 'Send again',
+                    payload: 'x'
+                  },
+                  {
+                    content_type:'text',
+                    title: 'Score',
+                    payload: 'g'//payload is needed but irrelevant
+                  }
+                ]});
           }
 
         } else if (message.attachments) {
