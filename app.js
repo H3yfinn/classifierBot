@@ -129,7 +129,7 @@ function processMessage(event) {
                       },
                     ]});
                   } else {
-                    sendMesage(senderId, {text: 'Bird or not a bird?'});
+                    sendMessage(senderId, {text: 'Bird or not a bird?'});
                     sendMessage(senderId, {
                         attachment:{
                           type:"image",
@@ -168,7 +168,7 @@ function processMessage(event) {
                   ]});
                 } else {
                   return
-                  sendMesage(senderId, {text: 'Bird or not a bird?'});
+                  sendMessage(senderId, {text: 'Bird or not a bird?'});
                   sendMessage(senderId, {
                       attachment:{
                         type:"image",
@@ -215,7 +215,7 @@ function processMessage(event) {
                         },
                       ]});
                     } else {
-                      return sendMesage(senderId, {text: 'Bird or not a bird?'});
+                      return sendMessge(senderId, {text: 'Bird or not a bird?'});
                       sendMessage(senderId, {
                         attachment:{
                           type:"image",
@@ -248,7 +248,7 @@ function processMessage(event) {
                   return sendMessage(senderId, {text: "Sorry we only keep track of your last image classified. You can't redo the image you classified before the last one that you reclassified. Pleasebe more accurate"});
                 } else {
                   return sendImageAgain(senderId).then(function(image){
-                    return sendMesage(senderId, {text: 'Bird or not a bird?'});
+                    return sendMessage(senderId, {text: 'Bird or not a bird?'});
                     sendMessage(senderId, {
                       attachment:{
                         type:"image",
@@ -278,7 +278,7 @@ function processMessage(event) {
             } else if (formattedMsg=='send again') {
 
                 sendImageAgain(senderId).then(function(image){
-                  return sendMesage(senderId, {text: 'Bird or not a bird?'});
+                  return sendMessage(senderId, {text: 'Bird or not a bird?'});
                   sendMessage(senderId, {
                     attachment:{
                       type:"image",
@@ -344,7 +344,7 @@ function processClasification(senderId, formattedMsg){
     Users.findOne({'user_id' : senderId}, 'last_message_to pending_image score last_message_from', function(err, result){
       if (err) console.log(err);
       result.last_message_from = 'classification';
-      //at the moment the 'if' below is not needed since score and picture are the only mesages we set
+      //at the moment the 'if' below is not needed since score and picture are the only messages we set
       //'lastmessageto' to. However there is room for 'potential'!
       //what if message wasnt about a picture? give them an option to see latest pic using sendimageagain
       if (result.last_message_to == 'picture' || result.last_message_to == 'score'){
@@ -587,13 +587,7 @@ function sendInstructions(senderId){
     sendMessage(senderId, {text: "Undo: To undo your last classification please send 'undo'"})
     sendMessage(senderId, {text: "Score: We keep a track of how many images you have classified. To see this please send 'score'"})
     sendMessage(senderId, {text: "Skip: If you're struggling with the current image then please send 'skip' and we'll give you another one."});
-    sendMessage(senderId, {text: "Send Again: If the image we last sent you is not viewable then type 'send again' and we'll send it to you again!", quick_replies:[
-      {
-        content_type:'text',
-        title: 'Start',
-        payload: 'x'
-      }
-    ]});
+    sendMessage(senderId, {text: "Send Again: If the image we last sent you is not viewable then type 'send again' and we'll send it to you again!"});
     sendMessage(senderId, {text: "Instructions: We realise this isn't the best way to learn how to use this bot. We are working on that. If you'd like to see these instructions again then just send 'instructions'"});
     Users.findOne({'user_id':senderId}, 'pending_image', function(err, result){
       if (err) console.error(err);
@@ -676,7 +670,7 @@ function sendMessage(recipientId, message) {
 
 
 
-
+/*
 
 var newI = new Images({
   image_url: 'https://i.pinimg.com/736x/53/9b/65/539b656998d2d234356db92ea757d1d9--fractal-art-fractals.jpg',
@@ -710,3 +704,5 @@ var newI = new Images({
 newI.save(function(err){
   if (err) return console.log(err);
 });
+
+*/
